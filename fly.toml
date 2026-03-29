@@ -1,0 +1,24 @@
+app = 'uvm-testbench-generator'
+primary_region = 'sin'
+
+[build]
+
+[http_service]
+  internal_port = 8000
+  force_https = true
+  auto_stop_machines = 'stop'
+  auto_start_machines = true
+  min_machines_running = 0
+
+[checks]
+  [checks.alive]
+    type = "http"
+    port = 8000
+    path = "/api/protocols"
+    interval = "30s"
+    timeout = "5s"
+
+[[vm]]
+  memory = '512mb'
+  cpu_kind = 'shared'
+  cpus = 1
