@@ -9,3 +9,4 @@ output/
 test_output/
 test_folder/
 *.vcd
+.vercel

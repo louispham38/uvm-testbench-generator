@@ -4,27 +4,22 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse, Response
+from fastapi.responses import FileResponse, JSONResponse, Response
 from fastapi.staticfiles import StaticFiles
+from pydantic import BaseModel
 
 from uvmgen.core.generator import UVMGenerator
-from uvmgen.core.models import (
-    ComponentSelection,
-    Port,
-    ProjectConfig,
-    ProtocolConfig,
-    ProtocolType,
-    TestConfig,
-)
+from uvmgen.core.models import ProjectConfig
+from uvmgen.core.supabase_client import get_public_config, is_configured
 from uvmgen.protocols.registry import list_protocols
 
 _STATIC_DIR = Path(__file__).resolve().parent / "static"
 
 app = FastAPI(
     title="UVM Testbench Generator",
-    version="1.0.0",
+    version="2.0.0",
     description="Generate production-ready UVM testbench code from a simple configuration.",
 )
 
@@ -36,27 +31,33 @@ app.add_middleware(
 )
 
 
-# ── API routes ────────────────────────────────────────────────────────────────
+# ── Config endpoint (exposes Supabase public keys to frontend) ────────────────
+
+@app.get("/api/config")
+def api_config():
+    """Return public configuration for the frontend (Supabase keys, etc.)."""
+    return get_public_config()
+
+
+# ── Protocol endpoints ────────────────────────────────────────────────────────
 
 @app.get("/api/protocols")
 def api_list_protocols():
-    """Return available protocol definitions."""
     return {"protocols": list_protocols()}
 
 
 @app.get("/api/protocol/{name}/ports")
 def api_protocol_ports(name: str, data_width: int = 32, addr_width: int = 32):
-    """Return the default ports for a given protocol."""
     from uvmgen.protocols.registry import get_protocol
-
     proto = get_protocol(name)
     ports = proto.get_ports(data_width=data_width, addr_width=addr_width)
     return {"ports": [p.model_dump() for p in ports]}
 
 
+# ── Generation endpoints ─────────────────────────────────────────────────────
+
 @app.post("/api/generate")
 def api_generate(config: ProjectConfig):
-    """Generate UVM files and return them as JSON."""
     try:
         gen = UVMGenerator(config)
         files = gen.generate_all()
@@ -67,7 +68,6 @@ def api_generate(config: ProjectConfig):
 
 @app.post("/api/generate/zip")
 def api_generate_zip(config: ProjectConfig):
-    """Generate UVM files and return as a downloadable ZIP."""
     try:
         gen = UVMGenerator(config)
         zip_bytes = gen.generate_zip()
@@ -84,7 +84,6 @@ def api_generate_zip(config: ProjectConfig):
 
 @app.post("/api/generate/preview")
 def api_preview(config: ProjectConfig, component: str = "interface"):
-    """Preview a single generated component."""
     try:
         gen = UVMGenerator(config)
         files = gen.generate_all()
