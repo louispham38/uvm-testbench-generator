@@ -4,15 +4,14 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse, JSONResponse, Response
+from fastapi.responses import FileResponse, Response
 from fastapi.staticfiles import StaticFiles
-from pydantic import BaseModel
 
 from uvmgen.core.generator import UVMGenerator
 from uvmgen.core.models import ProjectConfig
-from uvmgen.core.supabase_client import get_public_config, is_configured
+from uvmgen.core.supabase_client import get_public_config
 from uvmgen.protocols.registry import list_protocols
 
 _STATIC_DIR = Path(__file__).resolve().parent / "static"
@@ -31,15 +30,29 @@ app.add_middleware(
 )
 
 
-# ── Config endpoint (exposes Supabase public keys to frontend) ────────────────
+# ── Page routes ───────────────────────────────────────────────────────────────
+
+@app.get("/")
+def landing_page():
+    return FileResponse(str(_STATIC_DIR / "landing.html"))
+
+
+@app.get("/app")
+def app_page():
+    return FileResponse(str(_STATIC_DIR / "index.html"))
+
+
+@app.get("/admin")
+def admin_page():
+    return FileResponse(str(_STATIC_DIR / "admin.html"))
+
+
+# ── API routes ────────────────────────────────────────────────────────────────
 
 @app.get("/api/config")
 def api_config():
-    """Return public configuration for the frontend (Supabase keys, etc.)."""
     return get_public_config()
 
-
-# ── Protocol endpoints ────────────────────────────────────────────────────────
 
 @app.get("/api/protocols")
 def api_list_protocols():
@@ -54,14 +67,11 @@ def api_protocol_ports(name: str, data_width: int = 32, addr_width: int = 32):
     return {"ports": [p.model_dump() for p in ports]}
 
 
-# ── Generation endpoints ─────────────────────────────────────────────────────
-
 @app.post("/api/generate")
 def api_generate(config: ProjectConfig):
     try:
         gen = UVMGenerator(config)
-        files = gen.generate_all()
-        return {"files": files}
+        return {"files": gen.generate_all()}
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
@@ -74,9 +84,7 @@ def api_generate_zip(config: ProjectConfig):
         return Response(
             content=zip_bytes,
             media_type="application/zip",
-            headers={
-                "Content-Disposition": f"attachment; filename={config.effective_module_name()}_uvm_tb.zip"
-            },
+            headers={"Content-Disposition": f"attachment; filename={config.effective_module_name()}_uvm_tb.zip"},
         )
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
@@ -89,18 +97,12 @@ def api_preview(config: ProjectConfig, component: str = "interface"):
         files = gen.generate_all()
         name = config.effective_module_name()
         key_map = {
-            "interface": f"{name}_if.sv",
-            "sequence_item": f"{name}_seq_item.sv",
-            "sequences": f"{name}_sequences.sv",
-            "driver": f"{name}_driver.sv",
-            "monitor": f"{name}_monitor.sv",
-            "sequencer": f"{name}_sequencer.sv",
-            "agent": f"{name}_agent.sv",
-            "scoreboard": f"{name}_scoreboard.sv",
-            "coverage": f"{name}_coverage.sv",
-            "env": f"{name}_env.sv",
-            "test": f"{name}_test.sv",
-            "top": f"{name}_tb_top.sv",
+            "interface": f"{name}_if.sv", "sequence_item": f"{name}_seq_item.sv",
+            "sequences": f"{name}_sequences.sv", "driver": f"{name}_driver.sv",
+            "monitor": f"{name}_monitor.sv", "sequencer": f"{name}_sequencer.sv",
+            "agent": f"{name}_agent.sv", "scoreboard": f"{name}_scoreboard.sv",
+            "coverage": f"{name}_coverage.sv", "env": f"{name}_env.sv",
+            "test": f"{name}_test.sv", "top": f"{name}_tb_top.sv",
             "package": f"{name}_pkg.sv",
         }
         fname = key_map.get(component)
@@ -113,11 +115,6 @@ def api_preview(config: ProjectConfig, component: str = "interface"):
         raise HTTPException(status_code=400, detail=str(e))
 
 
-# ── Serve frontend ────────────────────────────────────────────────────────────
-
-@app.get("/")
-def index():
-    return FileResponse(str(_STATIC_DIR / "index.html"))
-
+# ── Static files (must be last) ──────────────────────────────────────────────
 
 app.mount("/static", StaticFiles(directory=str(_STATIC_DIR)), name="static")

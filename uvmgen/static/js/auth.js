@@ -36,7 +36,7 @@ async function initAuth() {
 }
 
 // ── User state ───────────────────────────────────────────────────────────────
-function setUser(user) {
+async function setUser(user) {
   currentUser = user;
   const name = user.user_metadata?.full_name || user.email?.split("@")[0] || "User";
   const initials = name.split(" ").map(w => w[0]).join("").toUpperCase().slice(0, 2);
@@ -47,6 +47,16 @@ function setUser(user) {
   document.getElementById("dropdown-name").textContent = name;
   document.getElementById("dropdown-email").textContent = user.email;
   document.getElementById("download-btn-text").textContent = "Download ZIP";
+
+  if (supabase) {
+    try {
+      const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).single();
+      if (profile && profile.role === "admin") {
+        const adminLink = document.getElementById("admin-link");
+        if (adminLink) adminLink.style.display = "inline";
+      }
+    } catch (e) {}
+  }
 }
 
 function clearUser() {
@@ -56,6 +66,8 @@ function clearUser() {
   document.getElementById("user-dropdown").style.display = "none";
   document.getElementById("feedback-panel").style.display = "none";
   document.getElementById("download-btn-text").textContent = "Download ZIP";
+  const adminLink = document.getElementById("admin-link");
+  if (adminLink) adminLink.style.display = "none";
 }
 
 function isLoggedIn() {

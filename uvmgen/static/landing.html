@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>UVM Testbench Generator - Build UVM Faster</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    tailwind.config = { theme: { extend: { colors: {
+      brand: {50:'#eef2ff',100:'#e0e7ff',200:'#c7d2fe',300:'#a5b4fc',400:'#818cf8',500:'#6366f1',600:'#4f46e5',700:'#4338ca',800:'#3730a3',900:'#312e81'},
+    }}}}
+  </script>
+  <link rel="stylesheet" href="/static/css/style.css" />
+  <style>
+    .hero-gradient { background: radial-gradient(ellipse 80% 60% at 50% -20%, rgba(99,102,241,0.15), transparent); }
+    .feature-card { background: #111827; border: 1px solid #1f2937; border-radius: 1rem; padding: 2rem; transition: all 0.2s; }
+    .feature-card:hover { border-color: #4f46e5; transform: translateY(-2px); box-shadow: 0 8px 30px rgba(79,70,229,0.15); }
+    .feature-icon { width: 3rem; height: 3rem; border-radius: 0.75rem; display: flex; align-items: center; justify-content: center; margin-bottom: 1rem; }
+    .glow-btn { position: relative; overflow: hidden; }
+    .glow-btn::after { content:''; position:absolute; inset:-2px; background:linear-gradient(135deg,#6366f1,#8b5cf6,#6366f1); border-radius:inherit; z-index:-1; filter:blur(8px); opacity:0.5; }
+  </style>
+</head>
+<body class="h-full bg-gray-950 text-gray-100">
+
+  <!-- Nav -->
+  <nav class="fixed top-0 w-full z-50 border-b border-gray-800/50 bg-gray-950/80 backdrop-blur-xl">
+    <div class="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-lg bg-brand-600 flex items-center justify-center font-bold text-sm text-white">UV</div>
+        <span class="text-lg font-bold tracking-tight">UVM Gen</span>
+      </div>
+      <div class="flex items-center gap-4">
+        <a href="/app" class="text-sm font-medium text-gray-400 hover:text-white transition">Try as Guest</a>
+        <button onclick="showAuth('login')" class="text-sm font-medium text-gray-300 hover:text-white transition">Sign In</button>
+        <button onclick="showAuth('register')" class="btn btn-primary text-sm" style="padding:0.5rem 1.25rem;">Get Started</button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <section class="hero-gradient pt-32 pb-20 px-6">
+    <div class="max-w-4xl mx-auto text-center">
+      <div class="inline-block mb-6 px-4 py-1.5 rounded-full border border-brand-500/30 text-brand-300 text-sm font-medium" style="background:rgba(99,102,241,0.08);">
+        Free &amp; Open Source for Verification Engineers
+      </div>
+      <h1 class="text-5xl sm:text-6xl font-extrabold tracking-tight leading-tight mb-6">
+        Generate <span style="background:linear-gradient(135deg,#818cf8,#c084fc);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">UVM Testbenches</span><br/>in Seconds
+      </h1>
+      <p class="text-lg text-gray-400 max-w-2xl mx-auto mb-10 leading-relaxed">
+        Define your DUT interface, pick a protocol, and get a complete production-ready UVM structure — Interface, Driver, Monitor, Agent, Scoreboard, Coverage, Tests, and more.
+      </p>
+      <div class="flex items-center justify-center gap-4 flex-wrap">
+        <a href="/app" class="btn btn-primary glow-btn text-base" style="padding:0.875rem 2rem;">
+          Try Generator (No Signup)
+        </a>
+        <button onclick="showAuth('register')" class="btn btn-secondary text-base" style="padding:0.875rem 2rem;">
+          Create Free Account
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Protocols -->
+  <section class="py-16 px-6 border-t border-gray-800/50">
+    <div class="max-w-6xl mx-auto">
+      <p class="text-center text-sm font-semibold text-gray-500 uppercase tracking-wider mb-8">Built-in Protocol Support</p>
+      <div class="flex items-center justify-center gap-8 flex-wrap">
+        <div class="text-center"><div class="text-2xl font-bold text-white">AXI4-Lite</div><p class="text-xs text-gray-500 mt-1">AMBA</p></div>
+        <div class="text-center"><div class="text-2xl font-bold text-white">APB</div><p class="text-xs text-gray-500 mt-1">AMBA</p></div>
+        <div class="text-center"><div class="text-2xl font-bold text-white">SPI</div><p class="text-xs text-gray-500 mt-1">Serial</p></div>
+        <div class="text-center"><div class="text-2xl font-bold text-white">UART</div><p class="text-xs text-gray-500 mt-1">Serial</p></div>
+        <div class="text-center"><div class="text-2xl font-bold text-gray-500">Custom</div><p class="text-xs text-gray-600 mt-1">Your protocol</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features -->
+  <section class="py-20 px-6">
+    <div class="max-w-6xl mx-auto">
+      <h2 class="text-3xl font-bold text-center mb-4">Everything You Need</h2>
+      <p class="text-center text-gray-400 mb-14 max-w-xl mx-auto">From interface to top-level testbench — 13 UVM files generated with proper structure, constraints, and coverage.</p>
+      <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div class="feature-card">
+          <div class="feature-icon" style="background:rgba(59,130,246,0.1);"><svg class="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg></div>
+          <h3 class="text-lg font-bold text-white mb-2">13 UVM Components</h3>
+          <p class="text-sm text-gray-400 leading-relaxed">Interface, Seq Item, Sequences, Driver, Monitor, Sequencer, Agent, Scoreboard, Coverage, Env, Test, Top, Package.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon" style="background:rgba(168,85,247,0.1);"><svg class="w-6 h-6 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg></div>
+          <h3 class="text-lg font-bold text-white mb-2">Protocol Constraints</h3>
+          <p class="text-sm text-gray-400 leading-relaxed">Auto-generated constraints and coverage for AXI4-Lite, APB, SPI, UART — or define your own custom protocol.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon" style="background:rgba(34,197,94,0.1);"><svg class="w-6 h-6 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg></div>
+          <h3 class="text-lg font-bold text-white mb-2">Download ZIP</h3>
+          <p class="text-sm text-gray-400 leading-relaxed">Preview every file in-browser with syntax highlighting, then download the complete testbench as a ZIP with one click.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon" style="background:rgba(234,179,8,0.1);"><svg class="w-6 h-6 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/></svg></div>
+          <h3 class="text-lg font-bold text-white mb-2">Fully Configurable</h3>
+          <p class="text-sm text-gray-400 leading-relaxed">Custom ports, data widths, clock frequency, multiple test scenarios, active/passive agents — you control everything.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon" style="background:rgba(239,68,68,0.1);"><svg class="w-6 h-6 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg></div>
+          <h3 class="text-lg font-bold text-white mb-2">CLI Tool</h3>
+          <p class="text-sm text-gray-400 leading-relaxed">Use locally via CLI: <code style="background:#1f2937;padding:0.125rem 0.375rem;border-radius:0.25rem;font-size:0.75rem;">uvmgen generate --protocol apb</code> for CI/CD integration.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon" style="background:rgba(99,102,241,0.1);"><svg class="w-6 h-6 text-brand-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg></div>
+          <h3 class="text-lg font-bold text-white mb-2">Feedback to Admin</h3>
+          <p class="text-sm text-gray-400 leading-relaxed">Signed-in users can send feedback, bug reports, or feature requests directly to the admin team.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="py-20 px-6 border-t border-gray-800/50">
+    <div class="max-w-2xl mx-auto text-center">
+      <h2 class="text-3xl font-bold mb-4">Start Building Your UVM Testbench</h2>
+      <p class="text-gray-400 mb-8">No signup required to try. Create an account to unlock downloads and chat.</p>
+      <div class="flex items-center justify-center gap-4 flex-wrap">
+        <a href="/app" class="btn btn-primary glow-btn text-base" style="padding:0.875rem 2rem;">Open Generator</a>
+        <button onclick="showAuth('register')" class="btn btn-secondary text-base" style="padding:0.875rem 2rem;">Create Account</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="py-8 px-6 border-t border-gray-800/50 text-center text-sm text-gray-500">
+    <p>UVM Testbench Generator &copy; 2026 &mdash; Built for Verification Engineers</p>
+  </footer>
+
+  <!-- Auth Modal -->
+  <div id="auth-modal" class="modal-overlay" style="display:none;">
+    <div class="modal-card">
+      <button onclick="hideAuth()" class="modal-close">&times;</button>
+      <div class="flex gap-1 mb-6">
+        <button id="tab-login" onclick="switchTab('login')" class="auth-tab active">Sign In</button>
+        <button id="tab-register" onclick="switchTab('register')" class="auth-tab">Create Account</button>
+      </div>
+      <form id="login-form" onsubmit="doLogin(event)" class="space-y-4">
+        <div><label class="label">Email</label><input id="l-email" type="email" class="input" required placeholder="you@company.com" /></div>
+        <div><label class="label">Password</label><input id="l-pass" type="password" class="input" required placeholder="Your password" /></div>
+        <p id="l-err" class="text-sm" style="color:#f87171;display:none;"></p>
+        <button type="submit" class="btn btn-primary w-full" id="l-btn">Sign In</button>
+        <p class="text-center text-sm" style="color:#9ca3af;">Or <a href="/app" class="hover:underline" style="color:#a5b4fc;">continue as Guest</a></p>
+      </form>
+      <form id="register-form" onsubmit="doRegister(event)" style="display:none;" class="space-y-4">
+        <div><label class="label">Full Name</label><input id="r-name" type="text" class="input" required placeholder="Your name" /></div>
+        <div><label class="label">Email</label><input id="r-email" type="email" class="input" required placeholder="you@company.com" /></div>
+        <div><label class="label">Company <span style="color:#6b7280;">(optional)</span></label><input id="r-company" type="text" class="input" placeholder="Company name" /></div>
+        <div><label class="label">Password</label><input id="r-pass" type="password" class="input" required minlength="6" placeholder="Min 6 characters" /></div>
+        <p id="r-err" class="text-sm" style="color:#f87171;display:none;"></p>
+        <p id="r-ok" class="text-sm" style="color:#34d399;display:none;"></p>
+        <button type="submit" class="btn btn-primary w-full" id="r-btn">Create Account</button>
+        <p class="text-center text-sm" style="color:#9ca3af;">Or <a href="/app" class="hover:underline" style="color:#a5b4fc;">continue as Guest</a></p>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    let sb = null;
+    (async () => {
+      try {
+        const r = await fetch("/api/config"); const c = await r.json();
+        if (c.auth_enabled) sb = window.supabase.createClient(c.supabase_url, c.supabase_anon_key);
+        if (sb) { const {data:{session}} = await sb.auth.getSession(); if (session) window.location.href = "/app"; }
+      } catch(e) {}
+    })();
+    function showAuth(t) { document.getElementById("auth-modal").style.display="flex"; switchTab(t); }
+    function hideAuth() { document.getElementById("auth-modal").style.display="none"; }
+    function switchTab(t) {
+      const l = t==="login";
+      document.getElementById("tab-login").classList.toggle("active",l);
+      document.getElementById("tab-register").classList.toggle("active",!l);
+      document.getElementById("login-form").style.display = l?"block":"none";
+      document.getElementById("register-form").style.display = l?"none":"block";
+      ["l-err","r-err","r-ok"].forEach(id => document.getElementById(id).style.display="none");
+    }
+    async function doLogin(e) {
+      e.preventDefault(); if (!sb) { showErr("l","Auth not configured"); return; }
+      const btn=document.getElementById("l-btn"); btn.textContent="Signing in..."; btn.disabled=true;
+      const {data,error} = await sb.auth.signInWithPassword({email:document.getElementById("l-email").value, password:document.getElementById("l-pass").value});
+      btn.textContent="Sign In"; btn.disabled=false;
+      if (error) { showErr("l",error.message); return; }
+      window.location.href="/app";
+    }
+    async function doRegister(e) {
+      e.preventDefault(); if (!sb) { showErr("r","Auth not configured"); return; }
+      const btn=document.getElementById("r-btn"); btn.textContent="Creating..."; btn.disabled=true;
+      const {data,error} = await sb.auth.signUp({email:document.getElementById("r-email").value, password:document.getElementById("r-pass").value,
+        options:{data:{full_name:document.getElementById("r-name").value,company:document.getElementById("r-company").value}}});
+      btn.textContent="Create Account"; btn.disabled=false;
+      if (error) { showErr("r",error.message); return; }
+      if (data.user && !data.user.confirmed_at && !data.session) {
+        document.getElementById("r-ok").textContent="Account created! Check email to confirm."; document.getElementById("r-ok").style.display="block";
+      } else { window.location.href="/app"; }
+    }
+    function showErr(p,m) { const el=document.getElementById(p+"-err"); el.textContent=m; el.style.display="block"; }
+  </script>
+</body>
+</html>

@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Dashboard - UVM Gen</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>tailwind.config={theme:{extend:{colors:{brand:{400:'#818cf8',500:'#6366f1',600:'#4f46e5',700:'#4338ca'}}}}}</script>
+  <link rel="stylesheet" href="/static/css/style.css" />
+  <style>
+    .stat-card { background:#111827; border:1px solid #1f2937; border-radius:1rem; padding:1.5rem; }
+    .stat-val { font-size:2.25rem; font-weight:800; line-height:1; }
+    .stat-label { font-size:0.8125rem; color:#6b7280; margin-top:0.25rem; }
+    .tbl { width:100%; border-collapse:collapse; font-size:0.875rem; }
+    .tbl th { text-align:left; padding:0.75rem 1rem; font-weight:600; color:#9ca3af; border-bottom:1px solid #1f2937; font-size:0.75rem; text-transform:uppercase; letter-spacing:0.05em; }
+    .tbl td { padding:0.75rem 1rem; border-bottom:1px solid #111827; color:#d1d5db; }
+    .tbl tr:hover td { background:#0d1117; }
+    .tab-btn { padding:0.5rem 1rem; font-size:0.875rem; font-weight:600; color:#6b7280; background:none; border:none; border-bottom:2px solid transparent; cursor:pointer; transition:all 0.15s; }
+    .tab-btn:hover { color:#d1d5db; }
+    .tab-btn.active { color:#a5b4fc; border-bottom-color:#6366f1; }
+    .badge { display:inline-block; padding:0.125rem 0.5rem; border-radius:9999px; font-size:0.6875rem; font-weight:600; }
+    .badge-admin { background:rgba(99,102,241,0.15); color:#a5b4fc; }
+    .badge-user { background:rgba(75,85,99,0.3); color:#9ca3af; }
+  </style>
+</head>
+<body class="h-full bg-gray-950 text-gray-100">
+
+  <!-- Loading -->
+  <div id="loading" class="flex items-center justify-center h-full">
+    <p class="text-gray-500 text-lg">Verifying admin access...</p>
+  </div>
+
+  <!-- Dashboard (hidden until verified) -->
+  <div id="dashboard" style="display:none;" class="flex flex-col h-full">
+
+    <!-- Header -->
+    <header class="border-b border-gray-800 bg-gray-900/80 backdrop-blur-md sticky top-0 z-50">
+      <div class="max-w-screen-xl mx-auto px-6 h-14 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="w-8 h-8 rounded-lg bg-brand-600 flex items-center justify-center font-bold text-sm text-white">UV</div>
+          <span class="text-lg font-bold">Admin Dashboard</span>
+        </div>
+        <div class="flex items-center gap-4">
+          <a href="/app" class="text-sm text-gray-400 hover:text-white transition font-medium">Back to App</a>
+          <button onclick="doLogout()" class="text-sm font-medium" style="color:#f87171;">Sign Out</button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Content -->
+    <main class="flex-1 overflow-auto">
+      <div class="max-w-screen-xl mx-auto px-6 py-8">
+
+        <!-- Stats cards -->
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+          <div class="stat-card">
+            <div class="stat-val text-white" id="s-users">-</div>
+            <div class="stat-label">Registered Users</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-val text-brand-400" id="s-downloads">-</div>
+            <div class="stat-label">Total Downloads</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-val text-green-400" id="s-messages">-</div>
+            <div class="stat-label">Messages</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-val text-yellow-400" id="s-today">-</div>
+            <div class="stat-label">Downloads Today</div>
+          </div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="flex gap-1 border-b border-gray-800 mb-6">
+          <button class="tab-btn active" onclick="showTab('users',this)">Users</button>
+          <button class="tab-btn" onclick="showTab('downloads',this)">Downloads / Usage</button>
+          <button class="tab-btn" onclick="showTab('messages',this)">Messages</button>
+        </div>
+
+        <!-- Users Tab -->
+        <div id="tab-users" class="tab-content">
+          <div style="background:#111827; border:1px solid #1f2937; border-radius:0.75rem; overflow:hidden;">
+            <table class="tbl">
+              <thead><tr><th>Name</th><th>Email</th><th>Company</th><th>Role</th><th>Joined</th></tr></thead>
+              <tbody id="users-body"><tr><td colspan="5" style="text-align:center;color:#6b7280;padding:2rem;">Loading...</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Downloads Tab -->
+        <div id="tab-downloads" class="tab-content" style="display:none;">
+          <div class="grid lg:grid-cols-2 gap-6 mb-6">
+            <div class="stat-card">
+              <h4 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-3">Protocol Usage</h4>
+              <div id="proto-stats"></div>
+            </div>
+            <div class="stat-card">
+              <h4 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-3">Top Users by Downloads</h4>
+              <div id="top-users"></div>
+            </div>
+          </div>
+          <div style="background:#111827; border:1px solid #1f2937; border-radius:0.75rem; overflow:hidden;">
+            <table class="tbl">
+              <thead><tr><th>User</th><th>Project</th><th>Protocol</th><th>Files</th><th>Date</th></tr></thead>
+              <tbody id="downloads-body"><tr><td colspan="5" style="text-align:center;color:#6b7280;padding:2rem;">Loading...</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Messages Tab -->
+        <div id="tab-messages" class="tab-content" style="display:none;">
+          <div style="background:#111827; border:1px solid #1f2937; border-radius:0.75rem; overflow:hidden;">
+            <table class="tbl">
+              <thead><tr><th>From</th><th>Category</th><th>Message</th><th>Date</th><th>Reply</th></tr></thead>
+              <tbody id="messages-body"><tr><td colspan="5" style="text-align:center;color:#6b7280;padding:2rem;">Loading...</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+    </main>
+  </div>
+
+  <script>
+    let sb = null, me = null;
+
+    (async () => {
+      const r = await fetch("/api/config"); const c = await r.json();
+      if (!c.auth_enabled) { document.getElementById("loading").innerHTML='<p class="text-red-400">Auth not configured</p>'; return; }
+      sb = window.supabase.createClient(c.supabase_url, c.supabase_anon_key);
+      const {data:{session}} = await sb.auth.getSession();
+      if (!session) { window.location.href = "/"; return; }
+      me = session.user;
+      const {data:profile} = await sb.from("profiles").select("role").eq("id", me.id).single();
+      if (!profile || profile.role !== "admin") {
+        document.getElementById("loading").innerHTML='<p class="text-red-400 text-lg">Access denied. Admin only.</p><a href="/app" class="text-brand-400 hover:underline mt-4 block">Back to App</a>';
+        return;
+      }
+      document.getElementById("loading").style.display = "none";
+      document.getElementById("dashboard").style.display = "flex";
+      loadAll();
+    })();
+
+    async function loadAll() {
+      const [profiles, downloads, messages] = await Promise.all([
+        sb.from("profiles").select("*").order("created_at",{ascending:false}),
+        sb.from("download_log").select("*").order("created_at",{ascending:false}).limit(200),
+        sb.from("messages").select("*").order("created_at",{ascending:false}).limit(200),
+      ]);
+
+      const users = profiles.data || [];
+      const dls = downloads.data || [];
+      const msgs = messages.data || [];
+      const today = new Date().toISOString().slice(0,10);
+
+      document.getElementById("s-users").textContent = users.length;
+      document.getElementById("s-downloads").textContent = dls.length;
+      document.getElementById("s-messages").textContent = msgs.length;
+      document.getElementById("s-today").textContent = dls.filter(d => d.created_at && d.created_at.startsWith(today)).length;
+
+      // Users table
+      document.getElementById("users-body").innerHTML = users.length ? users.map(u => `<tr>
+        <td class="font-medium text-white">${esc(u.full_name||'-')}</td>
+        <td>${esc(u.email)}</td>
+        <td>${esc(u.company||'-')}</td>
+        <td><span class="badge ${u.role==='admin'?'badge-admin':'badge-user'}">${u.role}</span></td>
+        <td style="color:#6b7280;">${fmtDate(u.created_at)}</td>
+      </tr>`).join("") : '<tr><td colspan="5" style="text-align:center;color:#6b7280;padding:2rem;">No users yet</td></tr>';
+
+      // Downloads table
+      const userMap = {}; users.forEach(u => userMap[u.id] = u);
+      document.getElementById("downloads-body").innerHTML = dls.length ? dls.map(d => {
+        const u = userMap[d.user_id]; const name = u ? (u.full_name||u.email) : d.user_id.slice(0,8);
+        return `<tr><td class="text-white">${esc(name)}</td><td class="font-medium">${esc(d.project_name)}</td><td><span class="badge" style="background:rgba(99,102,241,0.15);color:#a5b4fc;">${esc(d.protocol)}</span></td><td>${d.file_count}</td><td style="color:#6b7280;">${fmtDate(d.created_at)}</td></tr>`;
+      }).join("") : '<tr><td colspan="5" style="text-align:center;color:#6b7280;padding:2rem;">No downloads yet</td></tr>';
+
+      // Protocol stats
+      const protoCount = {}; dls.forEach(d => { protoCount[d.protocol] = (protoCount[d.protocol]||0)+1; });
+      const maxProto = Math.max(1,...Object.values(protoCount));
+      document.getElementById("proto-stats").innerHTML = Object.keys(protoCount).length ?
+        Object.entries(protoCount).sort((a,b)=>b[1]-a[1]).map(([p,c]) => `
+          <div class="flex items-center gap-3 mb-2">
+            <span class="text-sm font-medium text-gray-300 w-20">${esc(p)}</span>
+            <div class="flex-1 h-6 rounded-full" style="background:#1f2937;">
+              <div class="h-6 rounded-full flex items-center pl-3 text-xs font-bold text-white" style="width:${Math.max(10,c/maxProto*100)}%;background:linear-gradient(90deg,#4f46e5,#818cf8);">${c}</div>
+            </div>
+          </div>
+        `).join("") : '<p style="color:#6b7280;">No data yet</p>';
+
+      // Top users
+      const userDls = {}; dls.forEach(d => { userDls[d.user_id] = (userDls[d.user_id]||0)+1; });
+      const topEntries = Object.entries(userDls).sort((a,b)=>b[1]-a[1]).slice(0,5);
+      document.getElementById("top-users").innerHTML = topEntries.length ?
+        topEntries.map(([uid,cnt]) => {
+          const u = userMap[uid]; const nm = u ? (u.full_name||u.email) : uid.slice(0,8);
+          return `<div class="flex items-center justify-between py-1.5"><span class="text-sm text-gray-300">${esc(nm)}</span><span class="text-sm font-bold text-brand-400">${cnt} downloads</span></div>`;
+        }).join("") : '<p style="color:#6b7280;">No data yet</p>';
+
+      // Messages table
+      document.getElementById("messages-body").innerHTML = msgs.length ? msgs.map(m => `<tr>
+        <td class="text-white">${esc(m.user_name||m.user_email)}</td>
+        <td><span class="msg-category msg-cat-${m.category}">${m.category}</span></td>
+        <td style="max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${esc(m.content)}</td>
+        <td style="color:#6b7280;white-space:nowrap;">${fmtDate(m.created_at)}</td>
+        <td>${m.admin_reply ? '<span style="color:#34d399;">Replied</span>' :
+          `<button onclick="replyTo('${m.id}')" class="btn-sm btn-primary">Reply</button>`}</td>
+      </tr>`).join("") : '<tr><td colspan="5" style="text-align:center;color:#6b7280;padding:2rem;">No messages yet</td></tr>';
+    }
+
+    async function replyTo(msgId) {
+      const reply = prompt("Enter your reply:");
+      if (!reply) return;
+      await sb.from("messages").update({admin_reply:reply, replied_at:new Date().toISOString()}).eq("id",msgId);
+      loadAll();
+    }
+
+    function showTab(name, btn) {
+      document.querySelectorAll(".tab-content").forEach(el => el.style.display="none");
+      document.querySelectorAll(".tab-btn").forEach(el => el.classList.remove("active"));
+      document.getElementById("tab-"+name).style.display = "block";
+      btn.classList.add("active");
+    }
+
+    async function doLogout() { if(sb) await sb.auth.signOut(); window.location.href="/"; }
+    function fmtDate(d) { if(!d) return "-"; const dt=new Date(d); return dt.toLocaleDateString("en-GB",{day:"2-digit",month:"short",year:"numeric"}); }
+    function esc(s) { return String(s||'').replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
+  </script>
+</body>
+</html>
