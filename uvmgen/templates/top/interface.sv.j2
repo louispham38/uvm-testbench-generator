@@ -1,4 +1,6 @@
 {# UVM Interface Template #}
+{# Filter out clk/rst_n since they are declared as interface header ports #}
+{% set sig_ports = ports|rejectattr("name", "equalto", "clk")|rejectattr("name", "equalto", "rst_n")|list %}
 //==============================================================================
 // Interface: {{ name }}_if
 // Protocol:  {{ protocol_name }}
@@ -7,8 +9,12 @@
 
 interface {{ name }}_if (input logic clk, input logic rst_n);
 
-{% for port in ports %}
+{% for port in sig_ports %}
+{% if port.direction.value == 'inout' %}
+  wire {% if port.width > 1 %}[{{ port.width - 1 }}:0] {% endif %}{{ port.name }};
+{% else %}
   {{ port.signal_type.value }} {% if port.width > 1 %}[{{ port.width - 1 }}:0] {% endif %}{{ port.name }};
+{% endif %}
 {% endfor %}
 
   //--------------------------------------------------------------------------
@@ -16,7 +22,7 @@ interface {{ name }}_if (input logic clk, input logic rst_n);
   //--------------------------------------------------------------------------
   clocking driver_cb @(posedge clk);
     default input #1 output #1;
-{% for port in ports %}
+{% for port in sig_ports %}
 {% if port.direction.value == 'input' %}
     output {{ port.name }};
 {% elif port.direction.value == 'output' %}
@@ -29,7 +35,7 @@ interface {{ name }}_if (input logic clk, input logic rst_n);
 
   clocking monitor_cb @(posedge clk);
     default input #1;
-{% for port in ports %}
+{% for port in sig_ports %}
     input {{ port.name }};
 {% endfor %}
   endclocking
@@ -40,7 +46,9 @@ interface {{ name }}_if (input logic clk, input logic rst_n);
   modport DRV  (clocking driver_cb,  input clk, input rst_n);
   modport MON  (clocking monitor_cb, input clk, input rst_n);
   modport DUT  (
-{% for port in ports %}
+    input  clk,
+    input  rst_n{{ "," if sig_ports|length > 0 else "" }}
+{% for port in sig_ports %}
 {% if port.direction.value == 'input' %}
     input  {{ port.name }}{{ "," if not loop.last else "" }}
 {% elif port.direction.value == 'output' %}

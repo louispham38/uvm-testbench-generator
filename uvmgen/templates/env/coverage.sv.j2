@@ -15,9 +15,9 @@ class {{ name }}_coverage extends uvm_subscriber #({{ name }}_seq_item);
 {% for port in ports %}
 {% if port.width > 1 %}
     cp_{{ port.name }}: coverpoint item.{{ port.name }} {
-      bins low  = {[0:{{ ((2**port.width) // 4) - 1 }}]};
-      bins mid  = {[{{ (2**port.width) // 4 }}:{{ ((2**port.width) * 3 // 4) - 1 }}]};
-      bins high = {[{{ (2**port.width) * 3 // 4 }}:{{ (2**port.width) - 1 }}]};
+      bins low  = {[{{ port.width }}'d0:{{ port.width }}'d{{ ((2**port.width) // 4) - 1 }}]};
+      bins mid  = {[{{ port.width }}'d{{ (2**port.width) // 4 }}:{{ port.width }}'d{{ ((2**port.width) * 3 // 4) - 1 }}]};
+      bins high = {[{{ port.width }}'d{{ (2**port.width) * 3 // 4 }}:{{ port.width }}'d{{ (2**port.width) - 1 }}]};
     }
 {% else %}
     cp_{{ port.name }}: coverpoint item.{{ port.name }};

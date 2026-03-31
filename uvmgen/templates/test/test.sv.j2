@@ -57,14 +57,16 @@ class {{ name }}_base_test extends uvm_test;
 endclass : {{ name }}_base_test
 
 {% for test in tests %}
+{# Append _0 suffix when test.name would collide with the base_test class #}
+{% set tname = test.name ~ "_0" if test.name == "base_test" else test.name %}
 //------------------------------------------------------------------------------
 // {{ test.name }}
 //------------------------------------------------------------------------------
-class {{ name }}_{{ test.name }} extends {{ name }}_base_test;
+class {{ name }}_{{ tname }} extends {{ name }}_base_test;
 
-  `uvm_component_utils({{ name }}_{{ test.name }})
+  `uvm_component_utils({{ name }}_{{ tname }})
 
-  function new(string name = "{{ name }}_{{ test.name }}", uvm_component parent = null);
+  function new(string name = "{{ name }}_{{ tname }}", uvm_component parent = null);
     super.new(name, parent);
   endfunction
 
@@ -84,6 +86,6 @@ class {{ name }}_{{ test.name }} extends {{ name }}_base_test;
     phase.drop_objection(this);
   endtask
 
-endclass : {{ name }}_{{ test.name }}
+endclass : {{ name }}_{{ tname }}
 
 {% endfor %}

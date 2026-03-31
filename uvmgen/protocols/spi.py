@@ -20,18 +20,7 @@ class SPIProtocol(ProtocolBase):
         ]
 
     def get_constraints(self) -> str:
-        return """
-    constraint spi_data_c {
-        data inside {[0:(1 << DATA_WIDTH) - 1]};
-    }"""
+        return ""
 
     def get_coverage_bins(self) -> str:
-        return """
-    covergroup spi_cg;
-        spi_mode: coverpoint {cpol, cpha} {
-            bins mode0 = {2'b00};
-            bins mode1 = {2'b01};
-            bins mode2 = {2'b10};
-            bins mode3 = {2'b11};
-        }
-    endgroup"""
+        return ""

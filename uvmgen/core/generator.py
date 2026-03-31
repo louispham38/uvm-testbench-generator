@@ -65,6 +65,8 @@ class UVMGenerator:
         if comp.package:
             files[f"{name}_pkg.sv"] = self._render_package()
 
+        files["file.list"] = self._render_file_list(files)
+
         return files
 
     def generate_zip(self) -> bytes:
@@ -194,6 +196,40 @@ class UVMGenerator:
             "gen_env": c.env,
             "gen_test": c.test,
         })
+
+
+    def _render_file_list(self, files: dict[str, str]) -> str:
+        """Generate file.list containing only top-level compile units.
+
+        Files that are `include'd inside the package are not listed here
+        to avoid double-compilation and cross-module reference errors.
+        Order: interface first, then package, then tb_top last.
+        """
+        name = self.config.effective_module_name()
+        included_in_pkg = {
+            f"{name}_seq_item.sv",
+            f"{name}_sequences.sv",
+            f"{name}_driver.sv",
+            f"{name}_monitor.sv",
+            f"{name}_sequencer.sv",
+            f"{name}_agent.sv",
+            f"{name}_scoreboard.sv",
+            f"{name}_coverage.sv",
+            f"{name}_env.sv",
+            f"{name}_test.sv",
+        }
+        preferred_order = [
+            f"{name}_if.sv",
+            f"{name}_pkg.sv",
+            f"{name}_tb_top.sv",
+        ]
+        top_level = [
+            f for f in files
+            if f.endswith(".sv") and f not in included_in_pkg
+        ]
+        ordered = [f for f in preferred_order if f in top_level]
+        ordered += [f for f in top_level if f not in preferred_order]
+        return "\n".join(ordered) + "\n"
 
 
 def _default_ports():
