@@ -31,9 +31,10 @@
         <span class="text-lg font-bold tracking-tight">UVM Gen</span>
       </div>
       <div class="flex items-center gap-4">
-        <a href="/app" class="text-sm font-medium text-gray-400 hover:text-white transition">Try as Guest</a>
-        <button onclick="showAuth('login')" class="text-sm font-medium text-gray-300 hover:text-white transition">Sign In</button>
-        <button onclick="showAuth('register')" class="btn btn-primary text-sm" style="padding:0.5rem 1.25rem;">Get Started</button>
+        <a href="/app" class="text-sm font-medium text-gray-400 hover:text-white transition signed-out-only">Try as Guest</a>
+        <button onclick="showAuth('login')" class="text-sm font-medium text-gray-300 hover:text-white transition signed-out-only">Sign In</button>
+        <button onclick="showAuth('register')" class="btn btn-primary text-sm signed-out-only" style="padding:0.5rem 1.25rem;">Get Started</button>
+        <a href="/app" class="btn btn-primary text-sm signed-in-only" style="padding:0.5rem 1.25rem; display:none;">Go to App</a>
       </div>
     </div>
   </nav>
@@ -166,7 +167,13 @@
       try {
         const r = await fetch("/api/config"); const c = await r.json();
         if (c.auth_enabled) sb = window.supabase.createClient(c.supabase_url, c.supabase_anon_key);
-        if (sb) { const {data:{session}} = await sb.auth.getSession(); if (session) window.location.href = "/app"; }
+        if (sb) {
+          const {data:{session}} = await sb.auth.getSession();
+          if (session) {
+            document.querySelectorAll('.signed-out-only').forEach(el => el.style.display = 'none');
+            document.querySelectorAll('.signed-in-only').forEach(el => el.style.display = '');
+          }
+        }
       } catch(e) {}
     })();
     function showAuth(t) { document.getElementById("auth-modal").style.display="flex"; switchTab(t); }
