@@ -1,6 +1,6 @@
 // UVM Testbench Generator - Authentication Module
 
-let supabase = null;
+let sbClient = null;
 let currentUser = null;
 let authEnabled = false;
 
@@ -16,14 +16,14 @@ async function initAuth() {
       return;
     }
 
-    supabase = window.supabase.createClient(cfg.supabase_url, cfg.supabase_anon_key);
+    sbClient = window.supabase.createClient(cfg.supabase_url, cfg.supabase_anon_key);
 
-    const { data: { session } } = await supabase.auth.getSession();
+    const { data: { session } } = await sbClient.auth.getSession();
     if (session) {
       setUser(session.user);
     }
 
-    supabase.auth.onAuthStateChange((_event, session) => {
+    sbClient.auth.onAuthStateChange((_event, session) => {
       if (session) {
         setUser(session.user);
       } else {
@@ -48,9 +48,9 @@ async function setUser(user) {
   document.getElementById("dropdown-email").textContent = user.email;
   document.getElementById("download-btn-text").textContent = "Download ZIP";
 
-  if (supabase) {
+  if (sbClient) {
     try {
-      const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).single();
+      const { data: profile } = await sbClient.from("profiles").select("role").eq("id", user.id).single();
       if (profile && profile.role === "admin") {
         const adminLink = document.getElementById("admin-link");
         if (adminLink) adminLink.style.display = "inline";
@@ -103,7 +103,7 @@ function clearAuthErrors() {
 // ── Login ────────────────────────────────────────────────────────────────────
 async function handleLogin(e) {
   e.preventDefault();
-  if (!authEnabled || !supabase) {
+  if (!authEnabled || !sbClient) {
     showAuthError("login", "Authentication not configured. Contact admin.");
     return;
   }
@@ -115,7 +115,7 @@ async function handleLogin(e) {
   btn.textContent = "Signing in...";
   btn.disabled = true;
 
-  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+  const { data, error } = await sbClient.auth.signInWithPassword({ email, password });
 
   btn.textContent = "Sign In";
   btn.disabled = false;
@@ -132,7 +132,7 @@ async function handleLogin(e) {
 // ── Register ─────────────────────────────────────────────────────────────────
 async function handleRegister(e) {
   e.preventDefault();
-  if (!authEnabled || !supabase) {
+  if (!authEnabled || !sbClient) {
     showAuthError("reg", "Authentication not configured. Contact admin.");
     return;
   }
@@ -146,7 +146,7 @@ async function handleRegister(e) {
   btn.textContent = "Creating account...";
   btn.disabled = true;
 
-  const { data, error } = await supabase.auth.signUp({
+  const { data, error } = await sbClient.auth.signUp({
     email,
     password,
     options: {
@@ -175,8 +175,8 @@ async function handleRegister(e) {
 
 // ── Logout ───────────────────────────────────────────────────────────────────
 async function handleLogout() {
-  if (supabase) {
-    await supabase.auth.signOut();
+  if (sbClient) {
+    await sbClient.auth.signOut();
   }
   clearUser();
   toast("Signed out");
@@ -206,12 +206,12 @@ function toggleFeedbackPanel() {
 }
 
 async function loadMessages() {
-  if (!supabase || !currentUser) return;
+  if (!sbClient || !currentUser) return;
 
   const list = document.getElementById("messages-list");
   list.innerHTML = '<p style="color:#6b7280; text-align:center; padding:1rem;">Loading...</p>';
 
-  const { data, error } = await supabase
+  const { data, error } = await sbClient
     .from("messages")
     .select("*")
     .eq("user_id", currentUser.id)
@@ -247,7 +247,7 @@ async function loadMessages() {
 
 async function sendMessage(e) {
   e.preventDefault();
-  if (!supabase || !currentUser) {
+  if (!sbClient || !currentUser) {
     toast("Please sign in to send messages", "error");
     return;
   }
@@ -256,7 +256,7 @@ async function sendMessage(e) {
   const category = document.getElementById("msg-category").value;
   if (!content) return;
 
-  const { error } = await supabase.from("messages").insert({
+  const { error } = await sbClient.from("messages").insert({
     user_id: currentUser.id,
     user_email: currentUser.email,
     user_name: currentUser.user_metadata?.full_name || "",

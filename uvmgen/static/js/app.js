@@ -153,8 +153,8 @@ async function downloadZip() {
     const a = document.createElement("a"); a.href = url; a.download = `${config.project_name}_uvm_tb.zip`; a.click();
     URL.revokeObjectURL(url);
 
-    if (supabase && currentUser) {
-      supabase.from("download_log").insert({
+    if (sbClient && currentUser) {
+      sbClient.from("download_log").insert({
         user_id: currentUser.id, project_name: config.project_name,
         protocol: config.protocol.protocol, file_count: Object.keys(generatedFiles).length || 13,
       }).then(() => {});
