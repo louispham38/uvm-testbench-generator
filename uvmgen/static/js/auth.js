@@ -12,7 +12,7 @@ async function initAuth() {
     authEnabled = cfg.auth_enabled;
 
     if (!authEnabled) {
-      console.log("Auth not configured - running in guest-only mode");
+      console.log("[auth] Not configured - guest-only mode");
       return;
     }
 
@@ -20,7 +20,7 @@ async function initAuth() {
 
     const { data: { session } } = await sbClient.auth.getSession();
     if (session) {
-      setUser(session.user);
+      await setUser(session.user);
     }
 
     sbClient.auth.onAuthStateChange((_event, session) => {
@@ -31,7 +31,7 @@ async function initAuth() {
       }
     });
   } catch (e) {
-    console.log("Auth init skipped:", e.message);
+    console.error("[auth] init error:", e.message);
   }
 }
 
@@ -72,6 +72,10 @@ function clearUser() {
 
 function isLoggedIn() {
   return currentUser !== null;
+}
+
+function getSbClient() {
+  return sbClient;
 }
 
 // ── Auth Modal ───────────────────────────────────────────────────────────────
@@ -115,18 +119,24 @@ async function handleLogin(e) {
   btn.textContent = "Signing in...";
   btn.disabled = true;
 
-  const { data, error } = await sbClient.auth.signInWithPassword({ email, password });
+  try {
+    const { data, error } = await sbClient.auth.signInWithPassword({ email, password });
 
-  btn.textContent = "Sign In";
-  btn.disabled = false;
+    btn.textContent = "Sign In";
+    btn.disabled = false;
 
-  if (error) {
-    showAuthError("login", error.message);
-    return;
+    if (error) {
+      showAuthError("login", error.message);
+      return;
+    }
+
+    hideAuthModal();
+    toast("Welcome back, " + (data.user.user_metadata?.full_name || email.split("@")[0]) + "!");
+  } catch (ex) {
+    btn.textContent = "Sign In";
+    btn.disabled = false;
+    showAuthError("login", "Unexpected error: " + ex.message);
   }
-
-  hideAuthModal();
-  toast("Welcome back, " + (data.user.user_metadata?.full_name || email.split("@")[0]) + "!");
 }
 
 // ── Register ─────────────────────────────────────────────────────────────────

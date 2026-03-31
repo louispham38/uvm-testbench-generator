@@ -9,32 +9,47 @@
   <script>tailwind.config={theme:{extend:{colors:{brand:{400:'#818cf8',500:'#6366f1',600:'#4f46e5',700:'#4338ca'}}}}}</script>
   <link rel="stylesheet" href="/static/css/style.css" />
   <style>
-    .stat-card { background:#111827; border:1px solid #1f2937; border-radius:1rem; padding:1.5rem; }
-    .stat-val { font-size:2.25rem; font-weight:800; line-height:1; }
-    .stat-label { font-size:0.8125rem; color:#6b7280; margin-top:0.25rem; }
-    .tbl { width:100%; border-collapse:collapse; font-size:0.875rem; }
-    .tbl th { text-align:left; padding:0.75rem 1rem; font-weight:600; color:#9ca3af; border-bottom:1px solid #1f2937; font-size:0.75rem; text-transform:uppercase; letter-spacing:0.05em; }
-    .tbl td { padding:0.75rem 1rem; border-bottom:1px solid #111827; color:#d1d5db; }
-    .tbl tr:hover td { background:#0d1117; }
-    .tab-btn { padding:0.5rem 1rem; font-size:0.875rem; font-weight:600; color:#6b7280; background:none; border:none; border-bottom:2px solid transparent; cursor:pointer; transition:all 0.15s; }
-    .tab-btn:hover { color:#d1d5db; }
-    .tab-btn.active { color:#a5b4fc; border-bottom-color:#6366f1; }
-    .badge { display:inline-block; padding:0.125rem 0.5rem; border-radius:9999px; font-size:0.6875rem; font-weight:600; }
-    .badge-admin { background:rgba(99,102,241,0.15); color:#a5b4fc; }
-    .badge-user { background:rgba(75,85,99,0.3); color:#9ca3af; }
+    .stat-card{background:#111827;border:1px solid #1f2937;border-radius:1rem;padding:1.5rem;}
+    .stat-val{font-size:2.25rem;font-weight:800;line-height:1;}
+    .stat-label{font-size:0.8125rem;color:#6b7280;margin-top:0.25rem;}
+    .tbl{width:100%;border-collapse:collapse;font-size:0.875rem;}
+    .tbl th{text-align:left;padding:0.75rem 1rem;font-weight:600;color:#9ca3af;border-bottom:1px solid #1f2937;font-size:0.75rem;text-transform:uppercase;letter-spacing:0.05em;}
+    .tbl td{padding:0.75rem 1rem;border-bottom:1px solid #111827;color:#d1d5db;vertical-align:top;}
+    .tbl tr:hover td{background:#0d1117;}
+    .tab-btn{padding:0.5rem 1.25rem;font-size:0.875rem;font-weight:600;color:#6b7280;background:none;border:none;border-bottom:2px solid transparent;cursor:pointer;transition:all 0.15s;}
+    .tab-btn:hover{color:#d1d5db;} .tab-btn.active{color:#a5b4fc;border-bottom-color:#6366f1;}
+    .badge{display:inline-block;padding:0.125rem 0.5rem;border-radius:9999px;font-size:0.6875rem;font-weight:600;}
+    .badge-admin{background:rgba(99,102,241,0.15);color:#a5b4fc;}
+    .badge-user{background:rgba(75,85,99,0.3);color:#9ca3af;}
+    .badge-proto{background:rgba(99,102,241,0.15);color:#a5b4fc;}
+    .panel{background:#111827;border:1px solid #1f2937;border-radius:0.75rem;overflow:hidden;}
+    .detail-row{display:flex;gap:0.5rem;padding:0.375rem 0;font-size:0.8125rem;}
+    .detail-label{color:#6b7280;min-width:5.5rem;flex-shrink:0;}
+    .detail-val{color:#e5e7eb;word-break:break-all;}
+    .config-block{background:#0d1117;border:1px solid #1e293b;border-radius:0.5rem;padding:0.75rem;font-size:0.75rem;font-family:monospace;color:#a5b4fc;max-height:16rem;overflow:auto;white-space:pre-wrap;word-break:break-all;}
+    .export-btn{display:inline-flex;align-items:center;gap:0.375rem;padding:0.375rem 0.75rem;font-size:0.75rem;font-weight:600;border-radius:0.375rem;cursor:pointer;border:none;transition:all 0.15s;background:#1f2937;color:#d1d5db;border:1px solid #374151;}
+    .export-btn:hover{background:#374151;color:#fff;}
+    .dl-zip{background:#1e3a5f;border-color:#2563eb;color:#93c5fd;}
+    .dl-zip:hover{background:#1e40af;color:#fff;}
+    .dl-json{background:#1e3a2e;border-color:#16a34a;color:#86efac;}
+    .dl-json:hover{background:#15803d;color:#fff;}
+    .search-input{background:#0d1117;border:1px solid #1f2937;border-radius:0.5rem;padding:0.5rem 0.75rem 0.5rem 2.25rem;font-size:0.875rem;color:#e5e7eb;outline:none;width:100%;max-width:20rem;transition:border-color 0.15s;}
+    .search-input:focus{border-color:#4f46e5;}
+    .search-wrap{position:relative;}.search-wrap svg{position:absolute;left:0.625rem;top:50%;transform:translateY(-50%);color:#6b7280;width:1rem;height:1rem;}
+    .action-group{display:inline-flex;gap:2px;}
+    .action-group .export-btn{border-radius:0;padding:0.25rem 0.5rem;font-size:0.625rem;}
+    .action-group .export-btn:first-child{border-radius:0.25rem 0 0 0.25rem;}
+    .action-group .export-btn:last-child{border-radius:0 0.25rem 0.25rem 0;}
   </style>
 </head>
 <body class="h-full bg-gray-950 text-gray-100">
 
-  <!-- Loading -->
   <div id="loading" class="flex items-center justify-center h-full">
     <p class="text-gray-500 text-lg">Verifying admin access...</p>
   </div>
 
-  <!-- Dashboard (hidden until verified) -->
   <div id="dashboard" style="display:none;" class="flex flex-col h-full">
 
-    <!-- Header -->
     <header class="border-b border-gray-800 bg-gray-900/80 backdrop-blur-md sticky top-0 z-50">
       <div class="max-w-screen-xl mx-auto px-6 h-14 flex items-center justify-between">
         <div class="flex items-center gap-3">
@@ -48,73 +63,132 @@
       </div>
     </header>
 
-    <!-- Content -->
     <main class="flex-1 overflow-auto">
       <div class="max-w-screen-xl mx-auto px-6 py-8">
 
-        <!-- Stats cards -->
-        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          <div class="stat-card">
-            <div class="stat-val text-white" id="s-users">-</div>
-            <div class="stat-label">Registered Users</div>
+        <!-- Stats -->
+        <div class="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
+          <div class="stat-card"><div class="stat-val text-white" id="s-users">-</div><div class="stat-label">Registered Users</div></div>
+          <div class="stat-card"><div class="stat-val text-brand-400" id="s-generations">-</div><div class="stat-label">Total Generations</div></div>
+          <div class="stat-card"><div class="stat-val text-orange-400" id="s-guests">-</div><div class="stat-label">Guest Sessions</div></div>
+          <div class="stat-card"><div class="stat-val text-green-400" id="s-downloads">-</div><div class="stat-label">ZIP Downloads</div></div>
+          <div class="stat-card"><div class="stat-val text-yellow-400" id="s-protocols">-</div><div class="stat-label">Protocols Used</div></div>
+        </div>
+
+        <!-- Protocol breakdown (inline bar) -->
+        <div class="panel p-4 mb-8">
+          <div class="flex items-center justify-between mb-3">
+            <h4 class="text-sm font-bold text-gray-400 uppercase tracking-wider">Protocol Usage (All Generations)</h4>
+            <span class="text-xs text-gray-600" id="proto-total-label"></span>
           </div>
-          <div class="stat-card">
-            <div class="stat-val text-brand-400" id="s-downloads">-</div>
-            <div class="stat-label">Total Downloads</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-val text-green-400" id="s-messages">-</div>
-            <div class="stat-label">Messages</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-val text-yellow-400" id="s-today">-</div>
-            <div class="stat-label">Downloads Today</div>
-          </div>
+          <div id="proto-inline-chart" class="flex items-center gap-2 flex-wrap"></div>
         </div>
 
         <!-- Tabs -->
         <div class="flex gap-1 border-b border-gray-800 mb-6">
-          <button class="tab-btn active" onclick="showTab('users',this)">Users</button>
-          <button class="tab-btn" onclick="showTab('downloads',this)">Downloads / Usage</button>
+          <button class="tab-btn active" onclick="showTab('users',this)">Users &amp; Contacts</button>
+          <button class="tab-btn" onclick="showTab('activity',this)">All Activity</button>
+          <button class="tab-btn" onclick="showTab('outputs',this)">Downloads</button>
           <button class="tab-btn" onclick="showTab('messages',this)">Messages</button>
         </div>
 
-        <!-- Users Tab -->
+        <!-- ═══ USERS TAB ═══ -->
         <div id="tab-users" class="tab-content">
-          <div style="background:#111827; border:1px solid #1f2937; border-radius:0.75rem; overflow:hidden;">
+          <div class="flex items-center justify-between mb-4">
+            <div class="search-wrap">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+              <input class="search-input" id="user-search" placeholder="Search by name, email, company..." oninput="filterUsers()" />
+            </div>
+            <button class="export-btn" onclick="exportUsersCSV()">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+              Export CSV
+            </button>
+          </div>
+          <div class="panel">
             <table class="tbl">
-              <thead><tr><th>Name</th><th>Email</th><th>Company</th><th>Role</th><th>Joined</th></tr></thead>
-              <tbody id="users-body"><tr><td colspan="5" style="text-align:center;color:#6b7280;padding:2rem;">Loading...</td></tr></tbody>
+              <thead><tr><th>Name</th><th>Email</th><th>Company</th><th>Role</th><th>Generations</th><th>Downloads</th><th>Joined</th></tr></thead>
+              <tbody id="users-body"><tr><td colspan="7" style="text-align:center;color:#6b7280;padding:2rem;">Loading...</td></tr></tbody>
             </table>
           </div>
         </div>
 
-        <!-- Downloads Tab -->
-        <div id="tab-downloads" class="tab-content" style="display:none;">
-          <div class="grid lg:grid-cols-2 gap-6 mb-6">
-            <div class="stat-card">
-              <h4 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-3">Protocol Usage</h4>
-              <div id="proto-stats"></div>
+        <!-- ═══ ALL ACTIVITY TAB ═══ -->
+        <div id="tab-activity" class="tab-content" style="display:none;">
+          <div class="flex items-center justify-between mb-4 flex-wrap gap-3">
+            <div class="flex items-center gap-3">
+              <div class="search-wrap">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                <input class="search-input" id="activity-search" placeholder="Search project, protocol, user..." oninput="filterActivity()" />
+              </div>
+              <select id="activity-filter" onchange="filterActivity()" style="background:#0d1117;border:1px solid #1f2937;border-radius:0.5rem;padding:0.5rem 0.75rem;font-size:0.875rem;color:#e5e7eb;">
+                <option value="all">All Users</option>
+                <option value="guest">Guests Only</option>
+                <option value="registered">Registered Only</option>
+              </select>
             </div>
-            <div class="stat-card">
-              <h4 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-3">Top Users by Downloads</h4>
-              <div id="top-users"></div>
+            <div class="flex items-center gap-2">
+              <button class="export-btn dl-json" onclick="downloadAllConfigsJSON('activity')">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                All Configs (JSON)
+              </button>
+              <button class="export-btn" onclick="exportActivityCSV()">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                Export CSV
+              </button>
             </div>
           </div>
-          <div style="background:#111827; border:1px solid #1f2937; border-radius:0.75rem; overflow:hidden;">
+          <div class="grid lg:grid-cols-3 gap-4 mb-6">
+            <div class="stat-card"><h4 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-3">Guest vs Registered</h4><div id="guest-ratio"></div></div>
+            <div class="stat-card"><h4 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-3">Protocol Distribution</h4><div id="activity-proto"></div></div>
+            <div class="stat-card"><h4 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-3">Recent Activity (7d)</h4><div id="activity-timeline"></div></div>
+          </div>
+          <div class="panel">
             <table class="tbl">
-              <thead><tr><th>User</th><th>Project</th><th>Protocol</th><th>Files</th><th>Date</th></tr></thead>
-              <tbody id="downloads-body"><tr><td colspan="5" style="text-align:center;color:#6b7280;padding:2rem;">Loading...</td></tr></tbody>
+              <thead><tr><th>Type</th><th>User / Session</th><th>Email</th><th>Project</th><th>Protocol</th><th>Files</th><th>Date</th><th>Actions</th></tr></thead>
+              <tbody id="activity-body"><tr><td colspan="8" style="text-align:center;color:#6b7280;padding:2rem;">Loading...</td></tr></tbody>
             </table>
           </div>
         </div>
 
-        <!-- Messages Tab -->
+        <!-- ═══ OUTPUTS TAB ═══ -->
+        <div id="tab-outputs" class="tab-content" style="display:none;">
+          <div class="flex items-center justify-between mb-4">
+            <div class="search-wrap">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+              <input class="search-input" id="output-search" placeholder="Search by user, project, protocol..." oninput="filterOutputs()" />
+            </div>
+            <div class="flex items-center gap-2">
+              <button class="export-btn dl-json" onclick="downloadAllConfigsJSON('outputs')">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                All Configs (JSON)
+              </button>
+              <button class="export-btn" onclick="exportOutputsCSV()">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                Export CSV
+              </button>
+            </div>
+          </div>
+          <!-- Protocol breakdown -->
+          <div class="grid lg:grid-cols-3 gap-4 mb-6">
+            <div class="stat-card"><h4 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-3">Protocol Distribution</h4><div id="proto-chart"></div></div>
+            <div class="stat-card"><h4 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-3">Top Users</h4><div id="top-users"></div></div>
+            <div class="stat-card"><h4 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-3">Components Trend</h4><div id="comp-stats"></div></div>
+          </div>
+          <!-- Outputs table -->
+          <div class="panel">
+            <table class="tbl">
+              <thead><tr><th>User</th><th>Email</th><th>Project</th><th>Protocol</th><th>Files</th><th>Date</th><th>Actions</th></tr></thead>
+              <tbody id="outputs-body"><tr><td colspan="7" style="text-align:center;color:#6b7280;padding:2rem;">Loading...</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- ═══ MESSAGES TAB ═══ -->
         <div id="tab-messages" class="tab-content" style="display:none;">
-          <div style="background:#111827; border:1px solid #1f2937; border-radius:0.75rem; overflow:hidden;">
+          <div class="panel">
             <table class="tbl">
-              <thead><tr><th>From</th><th>Category</th><th>Message</th><th>Date</th><th>Reply</th></tr></thead>
-              <tbody id="messages-body"><tr><td colspan="5" style="text-align:center;color:#6b7280;padding:2rem;">Loading...</td></tr></tbody>
+              <thead><tr><th>From</th><th>Email</th><th>Category</th><th>Message</th><th>Date</th><th>Reply</th></tr></thead>
+              <tbody id="messages-body"><tr><td colspan="6" style="text-align:center;color:#6b7280;padding:2rem;">Loading...</td></tr></tbody>
             </table>
           </div>
         </div>
@@ -123,8 +197,18 @@
     </main>
   </div>
 
+  <!-- Config Detail Modal -->
+  <div id="config-modal" class="modal-overlay" style="display:none;">
+    <div class="modal-card" style="max-width:40rem;max-height:90vh;overflow:auto;">
+      <button onclick="hideConfigModal()" class="modal-close">&times;</button>
+      <h3 class="text-lg font-bold text-white mb-4" id="config-modal-title">Generation Config</h3>
+      <div id="config-modal-body"></div>
+    </div>
+  </div>
+
   <script>
     let sb = null, me = null;
+    let allUsers = [], allOutputs = [], allMessages = [], allActivity = [];
 
     (async () => {
       const r = await fetch("/api/config"); const c = await r.json();
@@ -144,69 +228,399 @@
     })();
 
     async function loadAll() {
-      const [profiles, downloads, messages] = await Promise.all([
+      const [profiles, downloads, messages, generations] = await Promise.all([
         sb.from("profiles").select("*").order("created_at",{ascending:false}),
-        sb.from("download_log").select("*").order("created_at",{ascending:false}).limit(200),
+        sb.from("download_log").select("*").order("created_at",{ascending:false}).limit(500),
         sb.from("messages").select("*").order("created_at",{ascending:false}).limit(200),
+        sb.from("generation_log").select("*").order("created_at",{ascending:false}).limit(1000),
       ]);
 
-      const users = profiles.data || [];
-      const dls = downloads.data || [];
-      const msgs = messages.data || [];
-      const today = new Date().toISOString().slice(0,10);
+      allUsers = profiles.data || [];
+      allOutputs = downloads.data || [];
+      allMessages = messages.data || [];
+      allActivity = generations.data || [];
 
-      document.getElementById("s-users").textContent = users.length;
-      document.getElementById("s-downloads").textContent = dls.length;
-      document.getElementById("s-messages").textContent = msgs.length;
-      document.getElementById("s-today").textContent = dls.filter(d => d.created_at && d.created_at.startsWith(today)).length;
+      const guestSessions = new Set(allActivity.filter(a=>a.is_guest).map(a=>a.session_id)).size;
+      const allProtocols = {};
+      allActivity.forEach(a => { allProtocols[a.protocol] = (allProtocols[a.protocol]||0)+1; });
+      allOutputs.forEach(d => { allProtocols[d.protocol] = (allProtocols[d.protocol]||0)+1; });
 
-      // Users table
+      document.getElementById("s-users").textContent = allUsers.length;
+      document.getElementById("s-generations").textContent = allActivity.length;
+      document.getElementById("s-guests").textContent = guestSessions;
+      document.getElementById("s-downloads").textContent = allOutputs.length;
+      document.getElementById("s-protocols").textContent = Object.keys(allProtocols).length;
+
+      renderProtocolInlineChart(allProtocols);
+      renderUsers(allUsers);
+      renderActivity(allActivity);
+      renderOutputs(allOutputs);
+      renderMessages(allMessages);
+      renderCharts();
+      renderActivityCharts();
+    }
+
+    // ── Protocol inline chart (top-level) ─────────────────────────────────────
+    function renderProtocolInlineChart(protoCounts) {
+      const total = Object.values(protoCounts).reduce((s,v) => s+v, 0);
+      document.getElementById("proto-total-label").textContent = `${total} total uses across ${Object.keys(protoCounts).length} protocols`;
+      const colors = {'axi4_lite':'#818cf8','apb':'#34d399','spi':'#f59e0b','uart':'#f87171','custom':'#6b7280'};
+
+      if (!total) {
+        document.getElementById("proto-inline-chart").innerHTML = '<p style="color:#6b7280;">No data yet</p>';
+        return;
+      }
+
+      const sorted = Object.entries(protoCounts).sort((a,b) => b[1]-a[1]);
+      document.getElementById("proto-inline-chart").innerHTML =
+        `<div class="w-full h-8 rounded-lg overflow-hidden flex" style="background:#1f2937;">`+
+        sorted.map(([p,c]) => {
+          const pct = (c/total*100);
+          const col = colors[p] || '#'+((p.charCodeAt(0)*123456)%0xFFFFFF).toString(16).padStart(6,'0');
+          return `<div style="width:${Math.max(pct,3)}%;background:${col};height:100%;position:relative;" title="${p}: ${c} (${pct.toFixed(1)}%)">
+            ${pct > 12 ? `<span style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:0.6875rem;font-weight:700;color:#fff;">${p} (${c})</span>` : ''}
+          </div>`;
+        }).join('') + `</div>` +
+        `<div class="flex items-center gap-4 flex-wrap mt-2">` +
+        sorted.map(([p,c]) => {
+          const col = colors[p] || '#'+((p.charCodeAt(0)*123456)%0xFFFFFF).toString(16).padStart(6,'0');
+          return `<div class="flex items-center gap-1.5"><div class="w-3 h-3 rounded-sm" style="background:${col};"></div><span class="text-xs text-gray-300">${esc(p)}: <strong>${c}</strong></span></div>`;
+        }).join('') + `</div>`;
+    }
+
+    // ── Users ──────────────────────────────────────────────────────────────────
+    function renderUsers(users) {
+      const dlCount = {}, genCount = {};
+      allOutputs.forEach(d => { dlCount[d.user_id] = (dlCount[d.user_id]||0)+1; });
+      allActivity.filter(a => !a.is_guest && a.user_id).forEach(a => { genCount[a.user_id] = (genCount[a.user_id]||0)+1; });
+
       document.getElementById("users-body").innerHTML = users.length ? users.map(u => `<tr>
         <td class="font-medium text-white">${esc(u.full_name||'-')}</td>
-        <td>${esc(u.email)}</td>
-        <td>${esc(u.company||'-')}</td>
+        <td><a href="mailto:${esc(u.email)}" style="color:#818cf8;">${esc(u.email)}</a></td>
+        <td>${esc(u.company||'<span style="color:#4b5563;">—</span>')}</td>
         <td><span class="badge ${u.role==='admin'?'badge-admin':'badge-user'}">${u.role}</span></td>
-        <td style="color:#6b7280;">${fmtDate(u.created_at)}</td>
-      </tr>`).join("") : '<tr><td colspan="5" style="text-align:center;color:#6b7280;padding:2rem;">No users yet</td></tr>';
+        <td class="text-center font-bold" style="color:#818cf8;">${genCount[u.id]||0}</td>
+        <td class="text-center font-bold" style="color:#34d399;">${dlCount[u.id]||0}</td>
+        <td style="color:#6b7280;white-space:nowrap;">${fmtDate(u.created_at)}</td>
+      </tr>`).join("") : '<tr><td colspan="7" style="text-align:center;color:#6b7280;padding:2rem;">No users yet</td></tr>';
+    }
 
-      // Downloads table
-      const userMap = {}; users.forEach(u => userMap[u.id] = u);
-      document.getElementById("downloads-body").innerHTML = dls.length ? dls.map(d => {
-        const u = userMap[d.user_id]; const name = u ? (u.full_name||u.email) : d.user_id.slice(0,8);
-        return `<tr><td class="text-white">${esc(name)}</td><td class="font-medium">${esc(d.project_name)}</td><td><span class="badge" style="background:rgba(99,102,241,0.15);color:#a5b4fc;">${esc(d.protocol)}</span></td><td>${d.file_count}</td><td style="color:#6b7280;">${fmtDate(d.created_at)}</td></tr>`;
-      }).join("") : '<tr><td colspan="5" style="text-align:center;color:#6b7280;padding:2rem;">No downloads yet</td></tr>';
+    function filterUsers() {
+      const q = document.getElementById("user-search").value.toLowerCase();
+      const filtered = allUsers.filter(u =>
+        (u.full_name||'').toLowerCase().includes(q) ||
+        (u.email||'').toLowerCase().includes(q) ||
+        (u.company||'').toLowerCase().includes(q)
+      );
+      renderUsers(filtered);
+    }
 
-      // Protocol stats
-      const protoCount = {}; dls.forEach(d => { protoCount[d.protocol] = (protoCount[d.protocol]||0)+1; });
-      const maxProto = Math.max(1,...Object.values(protoCount));
-      document.getElementById("proto-stats").innerHTML = Object.keys(protoCount).length ?
+    function exportUsersCSV() {
+      const header = "Name,Email,Company,Role,Joined\n";
+      const rows = allUsers.map(u =>
+        `"${(u.full_name||'').replace(/"/g,'""')}","${u.email}","${(u.company||'').replace(/"/g,'""')}","${u.role}","${u.created_at}"`
+      ).join("\n");
+      downloadCSV(header + rows, "uvmgen_users.csv");
+    }
+
+    // ── Outputs ────────────────────────────────────────────────────────────────
+    function renderOutputs(outputs) {
+      const userMap = {};
+      allUsers.forEach(u => userMap[u.id] = u);
+
+      document.getElementById("outputs-body").innerHTML = outputs.length ? outputs.map((d, i) => {
+        const u = userMap[d.user_id];
+        const name = d.user_name || (u ? (u.full_name||u.email) : d.user_id?.slice(0,8));
+        const email = d.user_email || (u ? u.email : '');
+        const hasConfig = d.config_json && Object.keys(d.config_json).length > 0;
+        return `<tr>
+          <td class="text-white font-medium">${esc(name)}</td>
+          <td style="color:#9ca3af;font-size:0.8125rem;">${esc(email)}</td>
+          <td class="font-medium">${esc(d.project_name)}</td>
+          <td><span class="badge badge-proto">${esc(d.protocol)}</span></td>
+          <td class="text-center">${d.file_count||'-'}</td>
+          <td style="color:#6b7280;white-space:nowrap;">${fmtDate(d.created_at)}</td>
+          <td>${hasConfig ? `<div class="action-group">
+              <button onclick="showConfig('output',${i})" class="export-btn" title="View config">View</button>
+              <button onclick="downloadConfigJSON('output',${i})" class="export-btn dl-json" title="Download config JSON">JSON</button>
+              <button onclick="redownloadZip('output',${i})" class="export-btn dl-zip" title="Regenerate & download ZIP">ZIP</button>
+            </div>` : '<span style="color:#4b5563;">—</span>'}</td>
+        </tr>`;
+      }).join("") : '<tr><td colspan="7" style="text-align:center;color:#6b7280;padding:2rem;">No outputs yet</td></tr>';
+    }
+
+    function filterOutputs() {
+      const q = document.getElementById("output-search").value.toLowerCase();
+      const filtered = allOutputs.filter(d =>
+        (d.user_name||'').toLowerCase().includes(q) ||
+        (d.user_email||'').toLowerCase().includes(q) ||
+        (d.project_name||'').toLowerCase().includes(q) ||
+        (d.protocol||'').toLowerCase().includes(q)
+      );
+      renderOutputs(filtered);
+    }
+
+    function exportOutputsCSV() {
+      const header = "User,Email,Project,Protocol,Files,Config,Date\n";
+      const rows = allOutputs.map(d => {
+        const cfgStr = d.config_json ? JSON.stringify(d.config_json).replace(/"/g,'""') : '';
+        return `"${(d.user_name||'').replace(/"/g,'""')}","${d.user_email||''}","${d.project_name}","${d.protocol}","${d.file_count}","${cfgStr}","${d.created_at}"`;
+      }).join("\n");
+      downloadCSV(header + rows, "uvmgen_outputs.csv");
+    }
+
+    // ── Activity ───────────────────────────────────────────────────────────────
+    function renderActivity(items) {
+      document.getElementById("activity-body").innerHTML = items.length ? items.map((a, i) => {
+        const isGuest = a.is_guest;
+        const label = isGuest ? `<span class="badge" style="background:rgba(251,146,60,0.15);color:#fb923c;">Guest</span>` :
+          `<span class="badge badge-admin">User</span>`;
+        const name = isGuest ? a.session_id.slice(0,8) + '...' : (a.user_name || a.user_email || '-');
+        const hasConfig = a.config_json && Object.keys(a.config_json).length > 0;
+        return `<tr>
+          <td>${label}</td>
+          <td class="text-white font-medium" style="font-size:0.8125rem;">${esc(name)}</td>
+          <td style="color:#9ca3af;font-size:0.8125rem;">${esc(a.user_email||'—')}</td>
+          <td class="font-medium">${esc(a.project_name)}</td>
+          <td><span class="badge badge-proto">${esc(a.protocol)}</span></td>
+          <td class="text-center">${a.file_count||'-'}</td>
+          <td style="color:#6b7280;white-space:nowrap;font-size:0.8125rem;">${fmtDate(a.created_at)}</td>
+          <td>${hasConfig ? `<div class="action-group">
+              <button onclick="showConfig('activity',${i})" class="export-btn" title="View config">View</button>
+              <button onclick="downloadConfigJSON('activity',${i})" class="export-btn dl-json" title="Download config JSON">JSON</button>
+              <button onclick="redownloadZip('activity',${i})" class="export-btn dl-zip" title="Regenerate & download ZIP">ZIP</button>
+            </div>` : '<span style="color:#4b5563;">—</span>'}</td>
+        </tr>`;
+      }).join("") : '<tr><td colspan="8" style="text-align:center;color:#6b7280;padding:2rem;">No activity yet</td></tr>';
+    }
+
+    function filterActivity() {
+      const q = document.getElementById("activity-search").value.toLowerCase();
+      const typeFilter = document.getElementById("activity-filter").value;
+      let filtered = allActivity;
+      if (typeFilter === "guest") filtered = filtered.filter(a => a.is_guest);
+      if (typeFilter === "registered") filtered = filtered.filter(a => !a.is_guest);
+      if (q) filtered = filtered.filter(a =>
+        (a.project_name||'').toLowerCase().includes(q) ||
+        (a.protocol||'').toLowerCase().includes(q) ||
+        (a.user_name||'').toLowerCase().includes(q) ||
+        (a.user_email||'').toLowerCase().includes(q) ||
+        (a.session_id||'').toLowerCase().includes(q)
+      );
+      renderActivity(filtered);
+    }
+
+    function exportActivityCSV() {
+      const header = "Type,SessionID,User,Email,Project,Protocol,Files,Config,Date\n";
+      const rows = allActivity.map(a => {
+        const cfgStr = a.config_json ? JSON.stringify(a.config_json).replace(/"/g,'""') : '';
+        return `"${a.is_guest?'Guest':'User'}","${a.session_id}","${(a.user_name||'').replace(/"/g,'""')}","${a.user_email||''}","${a.project_name}","${a.protocol}","${a.file_count}","${cfgStr}","${a.created_at}"`;
+      }).join("\n");
+      downloadCSV(header + rows, "uvmgen_all_activity.csv");
+    }
+
+    function renderActivityCharts() {
+      const guestCount = allActivity.filter(a=>a.is_guest).length;
+      const userCount = allActivity.length - guestCount;
+      const total = allActivity.length || 1;
+      const guestPct = Math.round(guestCount/total*100);
+      const userPct = 100 - guestPct;
+      document.getElementById("guest-ratio").innerHTML = `
+        <div class="flex items-center gap-3 mb-3">
+          <div class="flex-1 h-6 rounded-full overflow-hidden" style="background:#1f2937;">
+            <div class="h-6 rounded-l-full flex items-center justify-center text-xs font-bold text-white" style="width:${Math.max(5,guestPct)}%;background:#f97316;display:inline-block;float:left;line-height:1.5rem;">${guestPct}%</div>
+            <div class="h-6 flex items-center justify-center text-xs font-bold text-white" style="width:${Math.max(5,userPct)}%;background:#6366f1;display:inline-block;float:left;line-height:1.5rem;">${userPct}%</div>
+          </div>
+        </div>
+        <div class="flex justify-between text-xs">
+          <span style="color:#fb923c;">Guest: ${guestCount}</span>
+          <span style="color:#818cf8;">Registered: ${userCount}</span>
+        </div>`;
+
+      const protoCount = {};
+      allActivity.forEach(a => { protoCount[a.protocol] = (protoCount[a.protocol]||0)+1; });
+      const maxP = Math.max(1, ...Object.values(protoCount));
+      document.getElementById("activity-proto").innerHTML = Object.keys(protoCount).length ?
+        Object.entries(protoCount).sort((a,b)=>b[1]-a[1]).map(([p,c]) => `
+          <div class="flex items-center gap-2 mb-2">
+            <span class="text-xs text-gray-300 w-16">${esc(p)}</span>
+            <div class="flex-1 h-4 rounded-full" style="background:#1f2937;">
+              <div class="h-4 rounded-full" style="width:${Math.max(10,c/maxP*100)}%;background:linear-gradient(90deg,#4f46e5,#818cf8);"></div>
+            </div>
+            <span class="text-xs font-bold text-gray-300 w-8 text-right">${c}</span>
+          </div>`).join("") : '<p style="color:#6b7280;">No data yet</p>';
+
+      const days = {};
+      const now = Date.now();
+      for (let i = 6; i >= 0; i--) {
+        const d = new Date(now - i*86400000);
+        const key = d.toLocaleDateString("en-GB",{day:"2-digit",month:"short"});
+        days[key] = 0;
+      }
+      allActivity.forEach(a => {
+        const d = new Date(a.created_at);
+        const key = d.toLocaleDateString("en-GB",{day:"2-digit",month:"short"});
+        if (key in days) days[key]++;
+      });
+      const maxD = Math.max(1, ...Object.values(days));
+      document.getElementById("activity-timeline").innerHTML =
+        `<div class="flex items-end gap-1" style="height:5rem;">` +
+        Object.entries(days).map(([d,c]) =>
+          `<div class="flex-1 flex flex-col items-center gap-1">
+            <span class="text-xs font-bold" style="color:${c?'#818cf8':'#374151'};">${c||''}</span>
+            <div class="w-full rounded-t" style="height:${Math.max(4,c/maxD*100)}%;background:${c?'linear-gradient(180deg,#6366f1,#4f46e5)':'#1f2937'};min-height:4px;"></div>
+            <span class="text-xs text-gray-600" style="font-size:0.6rem;">${d}</span>
+          </div>`
+        ).join("") + `</div>`;
+    }
+
+    // ── Charts (Downloads tab) ──────────────────────────────────────────────
+    function renderCharts() {
+      const protoCount = {};
+      allOutputs.forEach(d => { protoCount[d.protocol] = (protoCount[d.protocol]||0)+1; });
+      const maxP = Math.max(1, ...Object.values(protoCount));
+      document.getElementById("proto-chart").innerHTML = Object.keys(protoCount).length ?
         Object.entries(protoCount).sort((a,b)=>b[1]-a[1]).map(([p,c]) => `
           <div class="flex items-center gap-3 mb-2">
             <span class="text-sm font-medium text-gray-300 w-20">${esc(p)}</span>
-            <div class="flex-1 h-6 rounded-full" style="background:#1f2937;">
-              <div class="h-6 rounded-full flex items-center pl-3 text-xs font-bold text-white" style="width:${Math.max(10,c/maxProto*100)}%;background:linear-gradient(90deg,#4f46e5,#818cf8);">${c}</div>
+            <div class="flex-1 h-5 rounded-full" style="background:#1f2937;">
+              <div class="h-5 rounded-full flex items-center pl-2 text-xs font-bold text-white" style="width:${Math.max(12,c/maxP*100)}%;background:linear-gradient(90deg,#4f46e5,#818cf8);">${c}</div>
             </div>
-          </div>
-        `).join("") : '<p style="color:#6b7280;">No data yet</p>';
+          </div>`).join("") : '<p style="color:#6b7280;">No data yet</p>';
 
-      // Top users
-      const userDls = {}; dls.forEach(d => { userDls[d.user_id] = (userDls[d.user_id]||0)+1; });
-      const topEntries = Object.entries(userDls).sort((a,b)=>b[1]-a[1]).slice(0,5);
-      document.getElementById("top-users").innerHTML = topEntries.length ?
-        topEntries.map(([uid,cnt]) => {
+      const userMap = {}; allUsers.forEach(u => userMap[u.id] = u);
+      const userDls = {};
+      allOutputs.forEach(d => { userDls[d.user_id] = (userDls[d.user_id]||0)+1; });
+      const topE = Object.entries(userDls).sort((a,b)=>b[1]-a[1]).slice(0,5);
+      document.getElementById("top-users").innerHTML = topE.length ?
+        topE.map(([uid,cnt]) => {
           const u = userMap[uid]; const nm = u ? (u.full_name||u.email) : uid.slice(0,8);
-          return `<div class="flex items-center justify-between py-1.5"><span class="text-sm text-gray-300">${esc(nm)}</span><span class="text-sm font-bold text-brand-400">${cnt} downloads</span></div>`;
+          return `<div class="flex items-center justify-between py-1"><span class="text-sm text-gray-300">${esc(nm)}</span><span class="text-sm font-bold text-brand-400">${cnt}</span></div>`;
         }).join("") : '<p style="color:#6b7280;">No data yet</p>';
 
-      // Messages table
+      const compCount = {};
+      allOutputs.forEach(d => {
+        if (d.config_json?.components) {
+          Object.entries(d.config_json.components).forEach(([k,v]) => { if (v) compCount[k] = (compCount[k]||0)+1; });
+        }
+      });
+      const maxC = Math.max(1, ...Object.values(compCount));
+      document.getElementById("comp-stats").innerHTML = Object.keys(compCount).length ?
+        Object.entries(compCount).sort((a,b)=>b[1]-a[1]).slice(0,8).map(([k,c]) => `
+          <div class="flex items-center gap-2 mb-1">
+            <span class="text-xs text-gray-400 w-20 truncate">${esc(k)}</span>
+            <div class="flex-1 h-3 rounded-full" style="background:#1f2937;">
+              <div class="h-3 rounded-full" style="width:${Math.max(8,c/maxC*100)}%;background:#22c55e;"></div>
+            </div>
+            <span class="text-xs text-gray-500 w-6 text-right">${c}</span>
+          </div>`).join("") : '<p style="color:#6b7280;">No data yet</p>';
+    }
+
+    // ── Shared Config / Download Actions ────────────────────────────────────
+    function getItem(source, idx) {
+      return source === 'activity' ? allActivity[idx] : allOutputs[idx];
+    }
+
+    function showConfig(source, idx) {
+      const d = getItem(source, idx); if (!d?.config_json) return;
+      const cfg = d.config_json;
+      const components = cfg.components ? Object.entries(cfg.components).filter(([,v])=>v).map(([k])=>k).join(', ') : 'all';
+      const tests = (cfg.tests||[]).map(t => `${t.name} (${t.num_transactions} txns, ${t.timeout_ns}ns)`).join('<br>');
+      const ports = (cfg.ports||[]).map(p => `${p.direction} [${p.width-1}:0] ${p.name}`).join('<br>');
+      const isGuest = d.is_guest;
+      const typeLabel = isGuest ? 'Guest ('+d.session_id.slice(0,12)+'...)' : (d.user_name||d.user_email||'User');
+
+      document.getElementById("config-modal-title").textContent = `${d.project_name} — ${(d.protocol||cfg.protocol?.protocol||'').toUpperCase()}`;
+      document.getElementById("config-modal-body").innerHTML = `
+        <div class="space-y-3">
+          <div class="detail-row"><span class="detail-label">User</span><span class="detail-val">${esc(typeLabel)}${d.user_email ? ' ('+esc(d.user_email)+')' : ''}</span></div>
+          <div class="detail-row"><span class="detail-label">Project</span><span class="detail-val font-bold text-white">${esc(cfg.project_name)}</span></div>
+          <div class="detail-row"><span class="detail-label">Module</span><span class="detail-val">${esc(cfg.module_name||cfg.project_name)}</span></div>
+          <div class="detail-row"><span class="detail-label">Protocol</span><span class="detail-val"><span class="badge badge-proto">${esc(cfg.protocol?.protocol)}</span> Data:${cfg.protocol?.data_width}b Addr:${cfg.protocol?.addr_width}b CLK:${cfg.protocol?.clock_freq_mhz}MHz</span></div>
+          <div class="detail-row"><span class="detail-label">Components</span><span class="detail-val">${esc(components)}</span></div>
+          ${ports ? `<div><span class="detail-label block mb-1">Ports (${cfg.ports?.length||0})</span><div class="config-block">${ports||'Protocol defaults'}</div></div>` : ''}
+          ${tests ? `<div><span class="detail-label block mb-1">Tests (${cfg.tests?.length||0})</span><div class="config-block">${tests}</div></div>` : ''}
+          <div><span class="detail-label block mb-1">Full JSON</span><div class="config-block">${JSON.stringify(cfg, null, 2)}</div></div>
+          <div class="flex gap-2 pt-3 flex-wrap">
+            <button onclick="redownloadZip('${source}',${idx})" class="btn btn-primary" style="padding:0.5rem 1rem;font-size:0.8125rem;">
+              <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>Download ZIP
+            </button>
+            <button onclick="downloadConfigJSON('${source}',${idx})" class="export-btn dl-json" style="padding:0.5rem 1rem;font-size:0.8125rem;">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>Download Config JSON
+            </button>
+            <button onclick="copyJSON('${source}',${idx})" class="btn btn-secondary" style="padding:0.5rem 1rem;font-size:0.8125rem;">Copy JSON</button>
+          </div>
+        </div>`;
+      document.getElementById("config-modal").style.display = "flex";
+    }
+
+    function hideConfigModal() { document.getElementById("config-modal").style.display = "none"; }
+
+    async function redownloadZip(source, idx) {
+      const d = getItem(source, idx); if (!d?.config_json) return;
+      try {
+        const res = await fetch("/api/admin/regenerate-zip", {
+          method: "POST", headers: {"Content-Type":"application/json"},
+          body: JSON.stringify(d.config_json)
+        });
+        if (!res.ok) throw new Error("Generation failed");
+        const blob = await res.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a"); a.href = url;
+        a.download = `${d.project_name}_uvm_tb.zip`; a.click();
+        URL.revokeObjectURL(url);
+      } catch(e) { alert("Error: " + e.message); }
+    }
+
+    function downloadConfigJSON(source, idx) {
+      const d = getItem(source, idx); if (!d?.config_json) return;
+      const json = JSON.stringify(d.config_json, null, 2);
+      const blob = new Blob([json], {type:'application/json'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a"); a.href = url;
+      a.download = `${d.project_name}_config.json`; a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function copyJSON(source, idx) {
+      const d = getItem(source, idx); if (!d?.config_json) return;
+      navigator.clipboard.writeText(JSON.stringify(d.config_json, null, 2))
+        .then(() => alert("JSON copied!"));
+    }
+
+    function downloadAllConfigsJSON(source) {
+      const items = source === 'activity' ? allActivity : allOutputs;
+      const configs = items.filter(d => d.config_json).map(d => ({
+        user: d.user_name || d.user_email || (d.is_guest ? 'guest:'+d.session_id?.slice(0,8) : d.user_id?.slice(0,8)),
+        email: d.user_email || '',
+        is_guest: !!d.is_guest,
+        project: d.project_name,
+        protocol: d.protocol,
+        file_count: d.file_count,
+        date: d.created_at,
+        config: d.config_json,
+      }));
+      if (!configs.length) { alert("No configs to export."); return; }
+      const json = JSON.stringify(configs, null, 2);
+      const blob = new Blob([json], {type:'application/json'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a"); a.href = url;
+      const label = source === 'activity' ? 'all_activity' : 'all_downloads';
+      a.download = `uvmgen_${label}_configs.json`; a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    // ── Messages ───────────────────────────────────────────────────────────────
+    function renderMessages(msgs) {
       document.getElementById("messages-body").innerHTML = msgs.length ? msgs.map(m => `<tr>
-        <td class="text-white">${esc(m.user_name||m.user_email)}</td>
+        <td class="text-white">${esc(m.user_name||'-')}</td>
+        <td style="color:#9ca3af;font-size:0.8125rem;">${esc(m.user_email)}</td>
         <td><span class="msg-category msg-cat-${m.category}">${m.category}</span></td>
-        <td style="max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${esc(m.content)}</td>
+        <td style="max-width:20rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${esc(m.content)}</td>
         <td style="color:#6b7280;white-space:nowrap;">${fmtDate(m.created_at)}</td>
         <td>${m.admin_reply ? '<span style="color:#34d399;">Replied</span>' :
-          `<button onclick="replyTo('${m.id}')" class="btn-sm btn-primary">Reply</button>`}</td>
-      </tr>`).join("") : '<tr><td colspan="5" style="text-align:center;color:#6b7280;padding:2rem;">No messages yet</td></tr>';
+          `<button onclick="replyTo('${m.id}')" class="export-btn" style="font-size:0.6875rem;background:#1e3a2e;border-color:#16a34a;color:#86efac;">Reply</button>`}</td>
+      </tr>`).join("") : '<tr><td colspan="6" style="text-align:center;color:#6b7280;padding:2rem;">No messages yet</td></tr>';
     }
 
     async function replyTo(msgId) {
@@ -216,6 +630,7 @@
       loadAll();
     }
 
+    // ── Helpers ─────────────────────────────────────────────────────────────────
     function showTab(name, btn) {
       document.querySelectorAll(".tab-content").forEach(el => el.style.display="none");
       document.querySelectorAll(".tab-btn").forEach(el => el.classList.remove("active"));
@@ -223,8 +638,15 @@
       btn.classList.add("active");
     }
 
+    function downloadCSV(content, filename) {
+      const blob = new Blob(["\ufeff" + content], {type:"text/csv;charset=utf-8;"});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a"); a.href = url; a.download = filename; a.click();
+      URL.revokeObjectURL(url);
+    }
+
     async function doLogout() { if(sb) await sb.auth.signOut(); window.location.href="/"; }
-    function fmtDate(d) { if(!d) return "-"; const dt=new Date(d); return dt.toLocaleDateString("en-GB",{day:"2-digit",month:"short",year:"numeric"}); }
+    function fmtDate(d) { if(!d) return "-"; const dt=new Date(d); return dt.toLocaleDateString("en-GB",{day:"2-digit",month:"short",year:"numeric"}) + " " + dt.toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit"}); }
     function esc(s) { return String(s||'').replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
   </script>
 </body>

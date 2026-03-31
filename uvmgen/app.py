@@ -115,6 +115,21 @@ def api_preview(config: ProjectConfig, component: str = "interface"):
         raise HTTPException(status_code=400, detail=str(e))
 
 
+@app.post("/api/admin/regenerate-zip")
+def admin_regenerate_zip(config: ProjectConfig):
+    """Re-generate a ZIP from a saved config (admin use)."""
+    try:
+        gen = UVMGenerator(config)
+        zip_bytes = gen.generate_zip()
+        return Response(
+            content=zip_bytes,
+            media_type="application/zip",
+            headers={"Content-Disposition": f"attachment; filename={config.effective_module_name()}_uvm_tb.zip"},
+        )
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
 # ── Static files (must be last) ──────────────────────────────────────────────
 
 app.mount("/static", StaticFiles(directory=str(_STATIC_DIR)), name="static")
