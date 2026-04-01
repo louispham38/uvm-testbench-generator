@@ -52,19 +52,4 @@ class AXI4LiteProtocol(ProtocolBase):
     }"""
 
     def get_coverage_bins(self) -> str:
-        return """
-    covergroup axi_lite_cg;
-        wr_resp: coverpoint bresp {
-            bins okay   = {2'b00};
-            bins slverr = {2'b10};
-        }
-        rd_resp: coverpoint rresp {
-            bins okay   = {2'b00};
-            bins slverr = {2'b10};
-        }
-        wr_addr: coverpoint awaddr {
-            bins low   = {[0:32'h0000_FFFF]};
-            bins mid   = {[32'h0001_0000:32'h7FFF_FFFF]};
-            bins high  = {[32'h8000_0000:32'hFFFF_FFFF]};
-        }
-    endgroup"""
+        return ""

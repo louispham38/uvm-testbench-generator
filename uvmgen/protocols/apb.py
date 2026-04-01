@@ -33,19 +33,4 @@ class APBProtocol(ProtocolBase):
     }"""
 
     def get_coverage_bins(self) -> str:
-        return """
-    covergroup apb_cg;
-        apb_write: coverpoint pwrite {
-            bins read  = {1'b0};
-            bins write = {1'b1};
-        }
-        apb_error: coverpoint pslverr {
-            bins ok  = {1'b0};
-            bins err = {1'b1};
-        }
-        apb_addr: coverpoint paddr {
-            bins low   = {[0:32'h0000_FFFF]};
-            bins mid   = {[32'h0001_0000:32'h7FFF_FFFF]};
-            bins high  = {[32'h8000_0000:32'hFFFF_FFFF]};
-        }
-    endgroup"""
+        return ""
