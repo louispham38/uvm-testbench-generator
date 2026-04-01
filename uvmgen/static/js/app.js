@@ -7,7 +7,6 @@ let ports = [];
 let tests = [{ name: "base_test", description: "Basic sanity test", num_transactions: 100, timeout_ns: 10000, has_reset_sequence: true }];
 let generatedFiles = {};
 let activeFile = null;
-const sessionId = crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).slice(2);
 
 // ── Initialization ───────────────────────────────────────────────────────────
 document.addEventListener("DOMContentLoaded", () => {
@@ -135,29 +134,7 @@ async function generatePreview() {
     const first = Object.keys(generatedFiles)[0];
     if (first) showFile(first);
     toast(`Generated ${Object.keys(generatedFiles).length} files`);
-    logGeneration(config);
   } catch (e) { toast("Error: " + e.message, "error"); }
-}
-
-function logGeneration(config) {
-  try {
-    const sb = getSbClient();
-    if (!sb) return;
-    sb.auth.getUser().then(r => {
-      const u = r.data?.user;
-      sb.rpc('log_generation', {
-        p_session_id: sessionId,
-        p_user_id: u?.id || null,
-        p_user_email: u?.email || "",
-        p_user_name: u?.user_metadata?.full_name || "",
-        p_project_name: config.project_name,
-        p_protocol: config.protocol.protocol,
-        p_file_count: Object.keys(generatedFiles).length,
-        p_config_json: config,
-        p_is_guest: !u,
-      });
-    });
-  } catch (_) {}
 }
 
 async function downloadZip() {
@@ -176,22 +153,11 @@ async function downloadZip() {
     const a = document.createElement("a"); a.href = url; a.download = `${config.project_name}_uvm_tb.zip`; a.click();
     URL.revokeObjectURL(url);
 
-    const sb = getSbClient();
-    if (sb && isLoggedIn()) {
-      sb.auth.getUser().then(r => {
-        if (r.data?.user) {
-          const u = r.data.user;
-          sb.from("download_log").insert({
-            user_id: u.id,
-            user_email: u.email || "",
-            user_name: u.user_metadata?.full_name || "",
-            project_name: config.project_name,
-            protocol: config.protocol.protocol,
-            file_count: Object.keys(generatedFiles).length || 13,
-            config_json: config,
-          });
-        }
-      });
+    if (sbClient && currentUser) {
+      sbClient.from("download_log").insert({
+        user_id: currentUser.id, project_name: config.project_name,
+        protocol: config.protocol.protocol, file_count: Object.keys(generatedFiles).length || 13,
+      }).then(() => {});
     }
     toast("ZIP downloaded!");
   } catch (e) { toast("Error: " + e.message, "error"); }
@@ -201,18 +167,27 @@ async function downloadZip() {
 function renderFileTabs() {
   const container = el("file-tabs");
   const names = Object.keys(generatedFiles);
-  container.innerHTML = names.map(fname => {
+  const svFiles = names.filter(f => f.endsWith(".sv"));
+  const utilFiles = names.filter(f => !f.endsWith(".sv"));
+  const tabHtml = (fname) => {
     const shortName = fname.replace(/\.sv$/, "");
     const icon = getFileIcon(fname);
     return `<button class="file-tab ${fname === activeFile ? 'active' : ''}" onclick="showFile('${esc(fname)}')">${icon} ${shortName}</button>`;
-  }).join("");
+  };
+  container.innerHTML =
+    svFiles.map(tabHtml).join("") +
+    (utilFiles.length ? '<span class="text-gray-600 px-1">|</span>' : '') +
+    utilFiles.map(tabHtml).join("");
 }
 
 function showFile(fname) {
   activeFile = fname;
   renderFileTabs();
   const content = generatedFiles[fname] || "";
-  const highlighted = hljs.highlight(content, { language: "verilog" }).value;
+  const lang = fname.endsWith(".sv") ? "verilog" : fname.endsWith(".sh") ? "bash" : "plaintext";
+  let highlighted;
+  try { highlighted = hljs.highlight(content, { language: lang }).value; }
+  catch { highlighted = esc(content); }
   el("code-preview").innerHTML = `
     <div class="flex items-center justify-between mb-3">
       <span class="text-base font-semibold" style="color:#e5e7eb;">${esc(fname)}</span>
@@ -221,11 +196,14 @@ function showFile(fname) {
         Copy
       </button>
     </div>
-    <pre><code class="hljs language-verilog">${highlighted}</code></pre>
+    <pre><code class="hljs language-${lang}">${highlighted}</code></pre>
   `;
 }
 
 function getFileIcon(fname) {
+  if (fname === "file.list")         return '<span class="text-sky-400">FL</span>';
+  if (fname === "README.txt")        return '<span class="text-lime-400">RM</span>';
+  if (fname === "run.sh")            return '<span class="text-orange-300">SH</span>';
   if (fname.includes("_if."))        return '<span class="text-blue-400">IF</span>';
   if (fname.includes("_driver"))     return '<span class="text-green-400">DR</span>';
   if (fname.includes("_monitor"))    return '<span class="text-yellow-400">MN</span>';
