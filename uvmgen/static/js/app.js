@@ -8,12 +8,15 @@ let tests = [{ name: "base_test", description: "Basic sanity test", num_transact
 let generatedFiles = {};
 let activeFile = null;
 const sessionId = crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).slice(2);
+const GUEST_DL_LIMIT = 3;
+const GUEST_DL_KEY = "uvmgen_guest_downloads";
 
 // ── Initialization ───────────────────────────────────────────────────────────
 document.addEventListener("DOMContentLoaded", () => {
   renderPorts();
   renderTests();
   initAuth();
+  updateGuestDlInfo();
 });
 
 // ── Build config ─────────────────────────────────────────────────────────────
@@ -30,6 +33,7 @@ function buildConfig() {
       data_width: parseInt(el("data_width").value) || 32,
       addr_width: parseInt(el("addr_width").value) || 32,
       clock_freq_mhz: parseFloat(el("clock_freq").value) || 100,
+      extra_params: buildExtraParams(),
     },
     agent: {
       is_active: el("agent_active").checked, has_driver: el("agent_driver").checked,
@@ -94,6 +98,56 @@ async function loadProtocolPorts() {
 function onProtocolChange() {
   const proto = el("protocol_type").value;
   el("data_width").value = (proto === "spi" || proto === "uart") ? 8 : 32;
+  renderProtoExtra(proto);
+}
+
+const PROTO_EXTRA_DEFS = {
+  spi: [
+    { id: "spi_cpol", label: "CPOL", type: "select", options: [{v:"0",l:"0 (idle low)"},{v:"1",l:"1 (idle high)"}], default: "0" },
+    { id: "spi_cpha", label: "CPHA", type: "select", options: [{v:"0",l:"0 (sample leading)"},{v:"1",l:"1 (sample trailing)"}], default: "0" },
+    { id: "spi_bit_order", label: "Bit Order", type: "select", options: [{v:"msb",l:"MSB first"},{v:"lsb",l:"LSB first"}], default: "msb" },
+  ],
+  uart: [
+    { id: "uart_baud", label: "Baud Rate", type: "number", default: "115200", min: 300 },
+    { id: "uart_data_bits", label: "Data Bits", type: "select", options: [{v:"7",l:"7"},{v:"8",l:"8"}], default: "8" },
+    { id: "uart_parity", label: "Parity", type: "select", options: [{v:"none",l:"None"},{v:"even",l:"Even"},{v:"odd",l:"Odd"}], default: "none" },
+    { id: "uart_stop_bits", label: "Stop Bits", type: "select", options: [{v:"1",l:"1"},{v:"2",l:"2"}], default: "1" },
+  ],
+  axi4_lite: [
+    { id: "axi_outstanding", label: "Outstanding Txns", type: "number", default: "1", min: 1 },
+    { id: "axi_resp_delay_max", label: "Max Resp Delay (cycles)", type: "number", default: "10", min: 0 },
+  ],
+  apb: [
+    { id: "apb_wait_states", label: "Max Wait States", type: "number", default: "0", min: 0 },
+    { id: "apb_slverr", label: "SLVERR Support", type: "select", options: [{v:"0",l:"No"},{v:"1",l:"Yes"}], default: "0" },
+  ],
+};
+
+function renderProtoExtra(proto) {
+  const defs = PROTO_EXTRA_DEFS[proto];
+  const wrap = el("proto-extra");
+  const container = el("proto-extra-fields");
+  if (!defs || !defs.length) { wrap.style.display = "none"; return; }
+  wrap.style.display = "block";
+  container.innerHTML = `<div class="grid grid-cols-2 gap-2">${defs.map(d => {
+    if (d.type === "select") {
+      return `<div><label class="label">${d.label}</label><select id="${d.id}" class="input">${d.options.map(o =>
+        `<option value="${o.v}" ${o.v===d.default?'selected':''}>${o.l}</option>`).join('')}</select></div>`;
+    }
+    return `<div><label class="label">${d.label}</label><input id="${d.id}" type="number" value="${d.default}" ${d.min!==undefined?'min="'+d.min+'"':''} class="input" /></div>`;
+  }).join('')}</div>`;
+}
+
+function buildExtraParams() {
+  const proto = el("protocol_type").value;
+  const defs = PROTO_EXTRA_DEFS[proto];
+  if (!defs) return {};
+  const params = {};
+  defs.forEach(d => {
+    const e = el(d.id);
+    if (e) params[d.id.replace(proto+'_',''). replace('axi_','').replace('apb_','').replace('uart_','').replace('spi_','')] = d.type === 'number' ? parseFloat(e.value) : e.value;
+  });
+  return params;
 }
 
 // ── Test Management ──────────────────────────────────────────────────────────
@@ -113,9 +167,10 @@ function renderTests() {
       </div>
       <div class="grid grid-cols-2 gap-2">
         <div><label class="label">Name</label><input class="input" value="${esc(t.name)}" onchange="updateTest(${i},'name',this.value)" /></div>
-        <div><label class="label">Transactions</label><input class="input" type="number" min="1" value="${t.num_transactions}" onchange="updateTest(${i},'num_transactions',parseInt(this.value)||100)" /></div>
+        <div><label class="label">Description</label><input class="input" value="${esc(t.description||'')}" onchange="updateTest(${i},'description',this.value)" placeholder="e.g. Basic R/W sanity" /></div>
       </div>
-      <div class="grid grid-cols-2 gap-2">
+      <div class="grid grid-cols-3 gap-2">
+        <div><label class="label">Transactions</label><input class="input" type="number" min="1" value="${t.num_transactions}" onchange="updateTest(${i},'num_transactions',parseInt(this.value)||100)" /></div>
         <div><label class="label">Timeout (ns)</label><input class="input" type="number" min="1" value="${t.timeout_ns}" onchange="updateTest(${i},'timeout_ns',parseInt(this.value)||10000)" /></div>
         <div class="flex items-end pb-1"><label class="checkbox-label"><input type="checkbox" class="checkbox" ${t.has_reset_sequence?"checked":""} onchange="updateTest(${i},'has_reset_sequence',this.checked)" /> Reset seq</label></div>
       </div>
@@ -160,11 +215,37 @@ function logGeneration(config) {
   } catch (_) {}
 }
 
+function getGuestDlCount() {
+  return parseInt(localStorage.getItem(GUEST_DL_KEY) || "0");
+}
+function incGuestDl() {
+  const c = getGuestDlCount() + 1;
+  localStorage.setItem(GUEST_DL_KEY, String(c));
+  updateGuestDlInfo();
+  return c;
+}
+function updateGuestDlInfo() {
+  const info = el("guest-dl-info");
+  if (!info) return;
+  if (typeof isLoggedIn === 'function' && isLoggedIn()) { info.style.display = "none"; return; }
+  const remaining = GUEST_DL_LIMIT - getGuestDlCount();
+  if (remaining > 0) {
+    info.style.display = "block";
+    info.innerHTML = `<span style="color:#818cf8;">${remaining}</span> free download${remaining>1?'s':''} remaining. <button onclick="showAuthModal('register')" style="color:#a5b4fc;text-decoration:underline;background:none;border:none;cursor:pointer;font-size:inherit;">Sign up for unlimited.</button>`;
+  } else {
+    info.style.display = "block";
+    info.innerHTML = `Free downloads used. <button onclick="showAuthModal('register')" style="color:#a5b4fc;text-decoration:underline;background:none;border:none;cursor:pointer;font-size:inherit;">Create a free account for unlimited downloads.</button>`;
+  }
+}
+
 async function downloadZip() {
   if (!isLoggedIn()) {
-    showAuthModal("login");
-    toast("Please sign in to download ZIP files", "error");
-    return;
+    const remaining = GUEST_DL_LIMIT - getGuestDlCount();
+    if (remaining <= 0) {
+      showAuthModal("register");
+      toast("Create a free account for unlimited downloads", "error");
+      return;
+    }
   }
 
   const config = buildConfig();
@@ -177,10 +258,10 @@ async function downloadZip() {
     URL.revokeObjectURL(url);
 
     const sb = getSbClient();
-    if (sb && isLoggedIn()) {
+    if (sb) {
       sb.auth.getUser().then(r => {
-        if (r.data?.user) {
-          const u = r.data.user;
+        const u = r.data?.user;
+        if (u) {
           sb.from("download_log").insert({
             user_id: u.id,
             user_email: u.email || "",
@@ -193,7 +274,14 @@ async function downloadZip() {
         }
       });
     }
-    toast("ZIP downloaded!");
+
+    if (!isLoggedIn()) {
+      const dlNum = incGuestDl();
+      const left = GUEST_DL_LIMIT - dlNum;
+      toast(left > 0 ? `ZIP downloaded! ${left} free download${left>1?'s':''} left.` : "ZIP downloaded! Sign up for unlimited downloads.");
+    } else {
+      toast("ZIP downloaded!");
+    }
   } catch (e) { toast("Error: " + e.message, "error"); }
 }
 
@@ -284,6 +372,94 @@ function toast(msg, type = "success") {
   document.body.appendChild(div);
   requestAnimationFrame(() => div.classList.add("show"));
   setTimeout(() => { div.classList.remove("show"); setTimeout(() => div.remove(), 300); }, 3000);
+}
+
+// ── Save / Load Config ───────────────────────────────────────────────────────
+function saveConfigJSON() {
+  const config = buildConfig();
+  const json = JSON.stringify(config, null, 2);
+  const blob = new Blob([json], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url; a.download = `${config.project_name}_config.json`; a.click();
+  URL.revokeObjectURL(url);
+  toast("Config saved as JSON!");
+}
+
+function loadConfigJSON(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    try {
+      const config = JSON.parse(e.target.result);
+      applyConfig(config);
+      toast(`Config loaded from ${file.name}`);
+    } catch (err) {
+      toast("Invalid config file: " + err.message, "error");
+    }
+  };
+  reader.readAsText(file);
+  event.target.value = "";
+}
+
+function applyConfig(config) {
+  if (config.project_name) el("project_name").value = config.project_name;
+  if (config.module_name !== undefined) el("module_name").value = config.module_name;
+
+  if (config.protocol) {
+    const p = config.protocol;
+    if (p.protocol) el("protocol_type").value = p.protocol;
+    if (p.data_width) el("data_width").value = p.data_width;
+    if (p.addr_width) el("addr_width").value = p.addr_width;
+    if (p.clock_freq_mhz) el("clock_freq").value = p.clock_freq_mhz;
+    renderProtoExtra(p.protocol || "custom");
+    if (p.extra_params) {
+      setTimeout(() => {
+        Object.entries(p.extra_params).forEach(([k, v]) => {
+          const defs = PROTO_EXTRA_DEFS[p.protocol] || [];
+          const match = defs.find(d => d.id.endsWith('_'+k));
+          if (match && el(match.id)) el(match.id).value = v;
+        });
+      }, 50);
+    }
+  }
+
+  if (config.agent) {
+    const a = config.agent;
+    el("agent_active").checked = a.is_active !== false;
+    el("agent_driver").checked = a.has_driver !== false;
+    el("agent_monitor").checked = a.has_monitor !== false;
+    el("agent_sequencer").checked = a.has_sequencer !== false;
+    el("agent_coverage").checked = a.has_coverage !== false;
+  }
+
+  if (config.components) {
+    Object.entries(config.components).forEach(([k, v]) => {
+      const cb = el("comp_" + k);
+      if (cb) cb.checked = v;
+    });
+  }
+
+  if (Array.isArray(config.tests) && config.tests.length) {
+    tests = config.tests.map(t => ({
+      name: t.name || "test",
+      description: t.description || "",
+      num_transactions: t.num_transactions || 100,
+      timeout_ns: t.timeout_ns || 10000,
+      has_reset_sequence: t.has_reset_sequence !== false,
+    }));
+    renderTests();
+  }
+
+  if (Array.isArray(config.ports)) {
+    ports = config.ports.map(p => ({
+      name: p.name || "", direction: p.direction || "input",
+      width: p.width || 1, signal_type: p.signal_type || "logic",
+      description: p.description || "",
+    }));
+    renderPorts();
+  }
 }
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
