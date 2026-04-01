@@ -199,7 +199,10 @@
         if (c.auth_enabled) sb = window.supabase.createClient(c.supabase_url, c.supabase_anon_key);
         if (sb) {
           const {data:{session}} = await sb.auth.getSession();
-          if (session) window.location.href = "/app";
+          if (session) {
+            document.querySelectorAll('.signed-out-only').forEach(el => el.style.display = 'none');
+            document.querySelectorAll('.signed-in-only').forEach(el => el.style.display = '');
+          }
           loadStats();
         }
       } catch(e) {}
