@@ -297,7 +297,7 @@
       document.getElementById("users-body").innerHTML = users.length ? users.map(u => `<tr>
         <td class="font-medium text-white">${esc(u.full_name||'-')}</td>
         <td><a href="mailto:${esc(u.email)}" style="color:#818cf8;">${esc(u.email)}</a></td>
-        <td>${esc(u.company||'<span style="color:#4b5563;">—</span>')}</td>
+        <td>${u.company ? esc(u.company) : '<span style="color:#4b5563;">—</span>'}</td>
         <td><span class="badge ${u.role==='admin'?'badge-admin':'badge-user'}">${u.role}</span></td>
         <td class="text-center font-bold" style="color:#818cf8;">${genCount[u.id]||0}</td>
         <td class="text-center font-bold" style="color:#34d399;">${dlCount[u.id]||0}</td>
@@ -344,7 +344,7 @@
               <button onclick="showConfig('output',${i})" class="export-btn" title="View config">View</button>
               <button onclick="downloadConfigJSON('output',${i})" class="export-btn dl-json" title="Download config JSON">JSON</button>
               <button onclick="redownloadZip('output',${i})" class="export-btn dl-zip" title="Regenerate & download ZIP">ZIP</button>
-            </div>` : '<span style="color:#4b5563;">—</span>'}</td>
+            </div>` : `<button onclick="regenFromBasic('output',${i})" class="export-btn dl-zip" title="Generate ZIP from project info" style="font-size:0.625rem;">ZIP</button>`}</td>
         </tr>`;
       }).join("") : '<tr><td colspan="7" style="text-align:center;color:#6b7280;padding:2rem;">No outputs yet</td></tr>';
     }
@@ -586,6 +586,31 @@
       const d = getItem(source, idx); if (!d?.config_json) return;
       navigator.clipboard.writeText(JSON.stringify(d.config_json, null, 2))
         .then(() => alert("JSON copied!"));
+    }
+
+    async function regenFromBasic(source, idx) {
+      const d = getItem(source, idx); if (!d) return;
+      const cfg = {
+        project_name: d.project_name || 'my_dut',
+        module_name: '',
+        ports: [],
+        protocol: { protocol: d.protocol || 'custom', data_width: 32, addr_width: 32, clock_freq_mhz: 100 },
+        agent: { is_active: true, has_driver: true, has_monitor: true, has_sequencer: true, has_coverage: true },
+        tests: [{ name: 'base_test', description: 'Basic test', num_transactions: 100, timeout_ns: 10000, has_reset_sequence: true }],
+        components: { interface:true, sequence_item:true, sequences:true, driver:true, monitor:true, sequencer:true, agent:true, scoreboard:true, coverage:true, env:true, test:true, top:true, "package":true },
+      };
+      try {
+        const res = await fetch("/api/admin/regenerate-zip", {
+          method: "POST", headers: {"Content-Type":"application/json"},
+          body: JSON.stringify(cfg)
+        });
+        if (!res.ok) throw new Error("Generation failed");
+        const blob = await res.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a"); a.href = url;
+        a.download = `${d.project_name}_uvm_tb.zip`; a.click();
+        URL.revokeObjectURL(url);
+      } catch(e) { alert("Error: " + e.message); }
     }
 
     function downloadAllConfigsJSON(source) {
