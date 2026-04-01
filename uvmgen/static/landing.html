@@ -69,19 +69,19 @@
       <p class="text-center text-sm font-semibold text-gray-500 uppercase tracking-wider mb-8">Trusted by Verification Engineers</p>
       <div class="grid grid-cols-2 lg:grid-cols-4 gap-6 text-center">
         <div>
-          <div class="text-4xl font-extrabold text-white" id="cnt-gen">-</div>
+          <div class="text-4xl font-extrabold text-white" id="cnt-gen">0</div>
           <p class="text-sm text-gray-400 mt-1">Testbenches Generated</p>
         </div>
         <div>
-          <div class="text-4xl font-extrabold" style="color:#818cf8;" id="cnt-users">-</div>
+          <div class="text-4xl font-extrabold" style="color:#818cf8;" id="cnt-users">0</div>
           <p class="text-sm text-gray-400 mt-1">Registered Engineers</p>
         </div>
         <div>
-          <div class="text-4xl font-extrabold text-green-400" id="cnt-dl">-</div>
+          <div class="text-4xl font-extrabold text-green-400" id="cnt-dl">0</div>
           <p class="text-sm text-gray-400 mt-1">ZIP Downloads</p>
         </div>
         <div>
-          <div class="text-4xl font-extrabold text-yellow-400" id="cnt-proto">-</div>
+          <div class="text-4xl font-extrabold text-yellow-400" id="cnt-proto">0</div>
           <p class="text-sm text-gray-400 mt-1">Protocols Supported</p>
         </div>
       </div>
@@ -100,8 +100,10 @@
       <div class="flex items-center justify-center gap-8 flex-wrap">
         <div class="text-center"><div class="text-2xl font-bold text-white">AXI4-Lite</div><p class="text-xs text-gray-500 mt-1">AMBA</p></div>
         <div class="text-center"><div class="text-2xl font-bold text-white">APB</div><p class="text-xs text-gray-500 mt-1">AMBA</p></div>
+        <div class="text-center"><div class="text-2xl font-bold text-white">AHB-Lite</div><p class="text-xs text-gray-500 mt-1">AMBA</p></div>
         <div class="text-center"><div class="text-2xl font-bold text-white">SPI</div><p class="text-xs text-gray-500 mt-1">Serial</p></div>
         <div class="text-center"><div class="text-2xl font-bold text-white">UART</div><p class="text-xs text-gray-500 mt-1">Serial</p></div>
+        <div class="text-center"><div class="text-2xl font-bold text-white">I2C</div><p class="text-xs text-gray-500 mt-1">Serial</p></div>
         <div class="text-center"><div class="text-2xl font-bold text-gray-500">Custom</div><p class="text-xs text-gray-600 mt-1">Your protocol</p></div>
       </div>
     </div>
@@ -121,7 +123,7 @@
         <div class="feature-card">
           <div class="feature-icon" style="background:rgba(168,85,247,0.1);"><svg class="w-6 h-6 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg></div>
           <h3 class="text-lg font-bold text-white mb-2">Protocol Constraints</h3>
-          <p class="text-sm text-gray-400 leading-relaxed">Auto-generated constraints and coverage for AXI4-Lite, APB, SPI, UART — or define your own custom protocol.</p>
+          <p class="text-sm text-gray-400 leading-relaxed">Auto-generated constraints and coverage for AXI4-Lite, APB, AHB-Lite, SPI, UART, I2C — or define your own custom protocol.</p>
         </div>
         <div class="feature-card">
           <div class="feature-icon" style="background:rgba(34,197,94,0.1);"><svg class="w-6 h-6 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg></div>
@@ -151,7 +153,7 @@
   <section class="py-20 px-6 border-t border-gray-800/50">
     <div class="max-w-2xl mx-auto text-center">
       <h2 class="text-3xl font-bold mb-4">Start Building Your UVM Testbench</h2>
-      <p class="text-gray-400 mb-8">No signup required to try. Create an account to unlock downloads and chat.</p>
+      <p class="text-gray-400 mb-8">Try instantly as a guest with 3 free ZIP downloads. Create a free account for unlimited downloads, saved configs, and direct feedback to the team.</p>
       <div class="flex items-center justify-center gap-4 flex-wrap">
         <a href="/app" class="btn btn-primary glow-btn text-base" style="padding:0.875rem 2rem;">Open Generator</a>
         <button onclick="showAuth('register')" class="btn btn-secondary text-base" style="padding:0.875rem 2rem;">Create Account</button>
@@ -219,7 +221,13 @@
           animateCounter('cnt-proto', data.protocols_used || 0);
           renderProtoBar(data.protocol_breakdown || {});
         }
-      } catch(e) { console.log('[stats]', e.message); }
+      } catch(e) {
+        console.log('[stats]', e.message);
+        document.getElementById('cnt-gen').textContent = '0';
+        document.getElementById('cnt-users').textContent = '0';
+        document.getElementById('cnt-dl').textContent = '0';
+        document.getElementById('cnt-proto').textContent = '0';
+      }
     }
     function animateCounter(id, target) {
       const el = document.getElementById(id);
@@ -240,7 +248,7 @@
       const wrap = document.getElementById('proto-bar-wrap');
       const bar = document.getElementById('proto-bar');
       wrap.style.display = 'block';
-      const colors = {'axi4_lite':'#818cf8','apb':'#34d399','spi':'#f59e0b','uart':'#f87171','custom':'#6b7280'};
+      const colors = {'axi4_lite':'#818cf8','apb':'#34d399','ahb':'#a78bfa','spi':'#f59e0b','uart':'#f87171','i2c':'#38bdf8','custom':'#6b7280'};
       bar.innerHTML =
         '<div style="display:flex;height:2rem;border-radius:0.5rem;overflow:hidden;background:#1f2937;">' +
         entries.map(([p,c]) => {

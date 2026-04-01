@@ -17,6 +17,7 @@ document.addEventListener("DOMContentLoaded", () => {
   renderTests();
   initAuth();
   updateGuestDlInfo();
+  setupMobilePanel();
 });
 
 // ── Build config ─────────────────────────────────────────────────────────────
@@ -97,7 +98,10 @@ async function loadProtocolPorts() {
 
 function onProtocolChange() {
   const proto = el("protocol_type").value;
-  el("data_width").value = (proto === "spi" || proto === "uart") ? 8 : 32;
+  const serialProtos = ["spi", "uart", "i2c"];
+  el("data_width").value = serialProtos.includes(proto) ? 8 : 32;
+  if (proto === "i2c") el("addr_width").value = 7;
+  else if (el("addr_width").value === "7") el("addr_width").value = 32;
   renderProtoExtra(proto);
 }
 
@@ -120,6 +124,16 @@ const PROTO_EXTRA_DEFS = {
   apb: [
     { id: "apb_wait_states", label: "Max Wait States", type: "number", default: "0", min: 0 },
     { id: "apb_slverr", label: "SLVERR Support", type: "select", options: [{v:"0",l:"No"},{v:"1",l:"Yes"}], default: "0" },
+  ],
+  ahb: [
+    { id: "ahb_burst_type", label: "Burst Type", type: "select", options: [{v:"single",l:"SINGLE"},{v:"incr",l:"INCR"},{v:"wrap4",l:"WRAP4"},{v:"incr4",l:"INCR4"}], default: "single" },
+    { id: "ahb_max_wait", label: "Max Wait States", type: "number", default: "4", min: 0 },
+    { id: "ahb_locked", label: "Locked Transfers", type: "select", options: [{v:"0",l:"No"},{v:"1",l:"Yes"}], default: "0" },
+  ],
+  i2c: [
+    { id: "i2c_addr_bits", label: "Address Bits", type: "select", options: [{v:"7",l:"7-bit"},{v:"10",l:"10-bit"}], default: "7" },
+    { id: "i2c_speed", label: "Speed Mode", type: "select", options: [{v:"standard",l:"Standard (100 kHz)"},{v:"fast",l:"Fast (400 kHz)"},{v:"fast_plus",l:"Fast+ (1 MHz)"}], default: "standard" },
+    { id: "i2c_clock_stretch", label: "Clock Stretching", type: "select", options: [{v:"0",l:"No"},{v:"1",l:"Yes"}], default: "1" },
   ],
 };
 
@@ -460,6 +474,36 @@ function applyConfig(config) {
     }));
     renderPorts();
   }
+}
+
+// ── Mobile Panel Toggle ─────────────────────────────────────────────────────
+let mobileConfigVisible = false;
+function setupMobilePanel() {
+  const mq = window.matchMedia("(max-width: 768px)");
+  function handleMobile(e) {
+    const btn = el("mobile-panel-btn");
+    const panel = el("config-panel");
+    if (!btn || !panel) return;
+    if (e.matches) {
+      btn.style.display = "flex";
+      if (!mobileConfigVisible) panel.style.display = "none";
+    } else {
+      btn.style.display = "none";
+      panel.style.display = "";
+    }
+  }
+  mq.addEventListener("change", handleMobile);
+  handleMobile(mq);
+}
+function toggleMobilePanel() {
+  const panel = el("config-panel");
+  const text = el("panel-toggle-text");
+  const chevron = el("panel-toggle-chevron");
+  if (!panel) return;
+  mobileConfigVisible = !mobileConfigVisible;
+  panel.style.display = mobileConfigVisible ? "" : "none";
+  if (text) text.textContent = mobileConfigVisible ? "Hide Configuration" : "Show Configuration";
+  if (chevron) chevron.style.transform = mobileConfigVisible ? "rotate(180deg)" : "";
 }
 
 // ── Helpers ──────────────────────────────────────────────────────────────────

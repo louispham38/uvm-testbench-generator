@@ -284,9 +284,115 @@ pre code.hljs { border-radius: 0.5rem; font-size: 0.875rem; line-height: 1.7; ba
 .msg-cat-question { background: rgba(234,179,8,0.15);  color: #fde047; }
 
 /* ── Responsive ────────────────────────────────────────────────────────────── */
+
+/* Desktop: nav items shown inline */
+.header-nav-items {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+/* Mobile menu toggle */
+.mobile-menu-btn {
+  display: none;
+  background: none;
+  border: none;
+  color: #9ca3af;
+  cursor: pointer;
+  padding: 0.375rem;
+  border-radius: 0.375rem;
+  transition: all 0.15s;
+}
+.mobile-menu-btn:hover { color: #e5e7eb; background: rgba(55,65,81,0.5); }
+
 @media (max-width: 768px) {
+  /* Layout: stack panels vertically */
   main { flex-direction: column !important; }
-  #config-panel { width: 100% !important; min-width: 0 !important; max-height: 50vh; }
-  .feedback-panel { width: 100%; }
-  .modal-card { margin: 1rem; max-width: calc(100% - 2rem); }
+  #config-panel {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-height: none !important;
+    border-right: none !important;
+    border-bottom: 1px solid #374151;
+    overflow-y: visible;
+  }
+  /* Preview area is full width */
+  #code-preview pre code { font-size: 0.75rem !important; }
+
+  /* Mobile toggle for config panel */
+  .mobile-panel-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.625rem;
+    background: #111827;
+    border-bottom: 1px solid #374151;
+    cursor: pointer;
+    color: #a5b4fc;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    width: 100%;
+    border: none;
+  }
+
+  /* Header: collapse items */
+  .mobile-menu-btn { display: block; }
+  .header-nav-items {
+    display: none;
+    position: absolute;
+    top: 3.5rem;
+    left: 0;
+    right: 0;
+    background: #111827;
+    border-bottom: 1px solid #374151;
+    padding: 0.75rem 1rem;
+    flex-direction: column;
+    gap: 0.5rem;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+    z-index: 49;
+  }
+  .header-nav-items.show { display: flex; }
+  .header-nav-items a,
+  .header-nav-items button,
+  .header-nav-items label {
+    display: block;
+    width: 100%;
+    text-align: left;
+    padding: 0.5rem 0;
+  }
+
+  /* File tabs: horizontal scroll */
+  #file-tabs { flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .file-tab { font-size: 0.75rem; padding: 0.375rem 0.5rem; }
+
+  /* Port rows: wrap */
+  .port-row { flex-wrap: wrap; }
+  .port-row .input { font-size: 0.75rem; }
+
+  /* Test cards */
+  .test-card .grid-cols-3 { grid-template-columns: 1fr 1fr !important; }
+
+  /* Feedback panel: full width overlay */
+  .feedback-panel { width: 100%; left: 0; }
+
+  /* Modal: adjust */
+  .modal-card { margin: 0.75rem; max-width: calc(100% - 1.5rem); padding: 1.5rem; }
+
+  /* Toast */
+  .toast { left: 1rem; right: 1rem; bottom: 1rem; }
+
+  /* Config panel padding */
+  #config-panel .p-5 { padding: 1rem !important; }
+}
+
+@media (max-width: 480px) {
+  /* Extra-small: tighter spacing */
+  .section-title { font-size: 0.75rem; }
+  .label { font-size: 0.75rem; }
+  .input { font-size: 0.8125rem; padding: 0.375rem 0.625rem; }
+  .btn { font-size: 0.8125rem; padding: 0.5rem 0.75rem; }
+  .btn-sm { font-size: 0.6875rem; padding: 0.25rem 0.5rem; }
+  .checkbox-label { font-size: 0.8125rem; }
+  #config-panel .grid-cols-2 { grid-template-columns: 1fr 1fr; }
 }

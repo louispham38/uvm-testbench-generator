@@ -36,7 +36,7 @@ def main():
 @main.command()
 @click.option("--name", "-n", required=True, help="Project / DUT name")
 @click.option("--protocol", "-p", default="custom",
-              type=click.Choice(["custom", "axi4_lite", "apb", "spi", "uart"], case_sensitive=False),
+              type=click.Choice(["custom", "axi4_lite", "apb", "ahb", "spi", "uart", "i2c"], case_sensitive=False),
               help="Protocol type")
 @click.option("--data-width", "-dw", default=32, type=int, help="Data bus width")
 @click.option("--addr-width", "-aw", default=32, type=int, help="Address bus width")

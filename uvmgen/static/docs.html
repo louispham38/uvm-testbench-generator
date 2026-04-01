@@ -192,10 +192,12 @@
 <span class="out">  Available Protocols:
 
     custom          Custom protocol
-    axi4_lite       AXI4-Lite (AMBA) Protocol
-    apb             APB (AMBA Advanced Peripheral Bus) Protocol
+    axi4_lite       AMBA AXI4-Lite Protocol
+    apb             AMBA APB Protocol
+    ahb             AMBA AHB-Lite Protocol
     spi             SPI (Serial Peripheral Interface) Protocol
-    uart            UART (Universal Asynchronous Receiver Transmitter) Protocol</span>
+    uart            UART (Universal Asynchronous Receiver Transmitter) Protocol
+    i2c             I2C (Inter-Integrated Circuit) Protocol</span>
             </div>
           </div>
 
@@ -273,12 +275,20 @@
               <p class="text-sm text-gray-400">AMBA APB with PSEL, PENABLE, PWRITE, PADDR, PWDATA, PRDATA, PREADY, PSLVERR.</p>
             </div>
             <div class="card">
+              <div class="flex items-center gap-2 mb-2"><span class="proto-tag" style="background:rgba(167,139,250,0.12);color:#a78bfa;">ahb</span><span class="text-sm font-bold text-white">AHB-Lite</span></div>
+              <p class="text-sm text-gray-400">AMBA AHB-Lite with HADDR, HWRITE, HSIZE, HBURST, HTRANS, HWDATA, HRDATA, HREADY, HRESP. Burst and transfer type constraints.</p>
+            </div>
+            <div class="card">
               <div class="flex items-center gap-2 mb-2"><span class="proto-tag">spi</span><span class="text-sm font-bold text-white">SPI</span></div>
               <p class="text-sm text-gray-400">Serial Peripheral Interface with SCLK, MOSI, MISO, CS_N. Configurable CPOL, CPHA, bit order.</p>
             </div>
             <div class="card">
               <div class="flex items-center gap-2 mb-2"><span class="proto-tag">uart</span><span class="text-sm font-bold text-white">UART</span></div>
               <p class="text-sm text-gray-400">UART with TX, RX, CTS_N, RTS_N. Configurable baud rate, data bits, parity, stop bits.</p>
+            </div>
+            <div class="card">
+              <div class="flex items-center gap-2 mb-2"><span class="proto-tag" style="background:rgba(56,189,248,0.12);color:#38bdf8;">i2c</span><span class="text-sm font-bold text-white">I2C</span></div>
+              <p class="text-sm text-gray-400">I2C with SCL/SDA (tri-state model). 7-bit/10-bit addressing, standard/fast/fast+ speed modes, clock stretching.</p>
             </div>
             <div class="card sm:col-span-2">
               <div class="flex items-center gap-2 mb-2"><span class="proto-tag" style="background:rgba(107,114,128,0.15);color:#9ca3af;">custom</span><span class="text-sm font-bold text-white">Custom</span></div>
