@@ -47,6 +47,11 @@ def admin_page():
     return FileResponse(str(_STATIC_DIR / "admin.html"))
 
 
+@app.get("/docs/cli")
+def docs_cli_page():
+    return FileResponse(str(_STATIC_DIR / "docs.html"))
+
+
 # ── API routes ────────────────────────────────────────────────────────────────
 
 @app.get("/api/config")

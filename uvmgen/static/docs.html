@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CLI Guide - UVM Testbench Generator</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { theme: { extend: { colors: {
+      brand: {50:'#eef2ff',100:'#e0e7ff',200:'#c7d2fe',300:'#a5b4fc',400:'#818cf8',500:'#6366f1',600:'#4f46e5',700:'#4338ca',800:'#3730a3',900:'#312e81'},
+    }}}}
+  </script>
+  <link rel="stylesheet" href="/static/css/style.css" />
+  <style>
+    .doc-section { max-width: 52rem; }
+    .code-block { background: #0d1117; border: 1px solid #1e293b; border-radius: 0.5rem; padding: 1rem 1.25rem; font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace; font-size: 0.8125rem; line-height: 1.7; color: #e2e8f0; overflow-x: auto; position: relative; }
+    .code-block .comment { color: #6b7280; }
+    .code-block .cmd { color: #34d399; }
+    .code-block .flag { color: #818cf8; }
+    .code-block .str { color: #fbbf24; }
+    .code-block .out { color: #9ca3af; }
+    .copy-btn { position: absolute; top: 0.5rem; right: 0.5rem; background: #1f2937; border: 1px solid #374151; border-radius: 0.375rem; padding: 0.25rem 0.5rem; font-size: 0.6875rem; color: #9ca3af; cursor: pointer; transition: all 0.15s; }
+    .copy-btn:hover { background: #374151; color: #fff; }
+    .step-num { display: inline-flex; align-items: center; justify-content: center; width: 1.75rem; height: 1.75rem; border-radius: 9999px; background: rgba(99,102,241,0.15); color: #a5b4fc; font-size: 0.8125rem; font-weight: 700; flex-shrink: 0; }
+    .proto-tag { display: inline-block; padding: 0.125rem 0.625rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; background: rgba(99,102,241,0.12); color: #a5b4fc; }
+    .toc-link { display: block; padding: 0.375rem 0; font-size: 0.8125rem; color: #9ca3af; transition: color 0.15s; text-decoration: none; }
+    .toc-link:hover { color: #e5e7eb; }
+    .card { background: #111827; border: 1px solid #1f2937; border-radius: 0.75rem; padding: 1.5rem; }
+  </style>
+</head>
+<body class="h-full bg-gray-950 text-gray-100">
+
+  <!-- Nav -->
+  <nav class="fixed top-0 w-full z-50 border-b border-gray-800/50 bg-gray-950/80 backdrop-blur-xl">
+    <div class="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <a href="/" class="flex items-center gap-3">
+          <div class="w-9 h-9 rounded-lg bg-brand-600 flex items-center justify-center font-bold text-sm text-white">UV</div>
+          <span class="text-lg font-bold tracking-tight">UVM Gen</span>
+        </a>
+        <span class="text-xs text-gray-500 border border-gray-700 rounded px-1.5 py-0.5">CLI Guide</span>
+      </div>
+      <div class="flex items-center gap-4">
+        <a href="/" class="text-sm font-medium text-gray-400 hover:text-white transition">Home</a>
+        <a href="/app" class="btn btn-primary text-sm" style="padding:0.5rem 1.25rem;">Open Generator</a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="pt-24 pb-20 px-6">
+    <div class="max-w-6xl mx-auto flex gap-12">
+
+      <!-- Sidebar TOC -->
+      <aside class="hidden lg:block w-48 flex-shrink-0 sticky top-24 self-start">
+        <p class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">On this page</p>
+        <a href="#install" class="toc-link">Installation</a>
+        <a href="#quick-start" class="toc-link">Quick Start</a>
+        <a href="#commands" class="toc-link">Commands</a>
+        <a href="#generate" class="toc-link" style="padding-left:1rem;">generate</a>
+        <a href="#init" class="toc-link" style="padding-left:1rem;">init</a>
+        <a href="#list-protocols" class="toc-link" style="padding-left:1rem;">list-protocols</a>
+        <a href="#serve" class="toc-link" style="padding-left:1rem;">serve</a>
+        <a href="#config-file" class="toc-link">Config File</a>
+        <a href="#protocols" class="toc-link">Protocols</a>
+        <a href="#examples" class="toc-link">Examples</a>
+        <a href="#cicd" class="toc-link">CI/CD Integration</a>
+      </aside>
+
+      <!-- Main content -->
+      <div class="doc-section flex-1 min-w-0">
+
+        <h1 class="text-4xl font-extrabold tracking-tight mb-3">CLI Guide</h1>
+        <p class="text-lg text-gray-400 mb-10 leading-relaxed">Use UVM Testbench Generator locally via the command line — perfect for scripting, CI/CD pipelines, and offline workflows.</p>
+
+        <!-- Install -->
+        <section id="install" class="mb-14">
+          <h2 class="text-2xl font-bold text-white mb-6 flex items-center gap-3"><span class="step-num">1</span> Installation</h2>
+
+          <div class="card mb-4">
+            <p class="text-sm font-semibold text-gray-300 mb-3">Option A: Install from source (recommended)</p>
+            <div class="code-block">
+              <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+<span class="comment"># Clone the repository</span>
+<span class="cmd">git clone</span> https://github.com/louispham38/uvm-testbench-generator.git
+<span class="cmd">cd</span> uvm-testbench-generator
+
+<span class="comment"># Install (creates the `uvmgen` command)</span>
+<span class="cmd">pip install</span> <span class="flag">-e</span> .
+            </div>
+          </div>
+
+          <div class="card mb-4">
+            <p class="text-sm font-semibold text-gray-300 mb-3">Option B: Install dependencies only</p>
+            <div class="code-block">
+              <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+<span class="cmd">pip install</span> <span class="flag">-r</span> requirements.txt
+<span class="cmd">python</span> <span class="flag">-m</span> uvmgen.cli <span class="flag">--help</span>
+            </div>
+          </div>
+
+          <div class="card">
+            <p class="text-sm font-semibold text-gray-300 mb-3">Verify installation</p>
+            <div class="code-block">
+              <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+<span class="cmd">uvmgen</span> <span class="flag">--version</span>
+<span class="out">uvmgen, version 1.0.0</span>
+            </div>
+          </div>
+          <p class="text-xs text-gray-500 mt-3">Requires Python 3.9+</p>
+        </section>
+
+        <!-- Quick Start -->
+        <section id="quick-start" class="mb-14">
+          <h2 class="text-2xl font-bold text-white mb-6 flex items-center gap-3"><span class="step-num">2</span> Quick Start</h2>
+          <p class="text-gray-400 mb-4">Generate a complete AXI4-Lite UVM testbench in one command:</p>
+
+          <div class="code-block mb-4">
+            <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+<span class="cmd">uvmgen generate</span> <span class="flag">--name</span> <span class="str">axi_slave</span> <span class="flag">--protocol</span> <span class="str">axi4_lite</span> <span class="flag">--output</span> <span class="str">./my_tb</span>
+          </div>
+
+          <p class="text-gray-400 mb-3">This creates a <code class="text-brand-300 bg-gray-800 px-1.5 py-0.5 rounded text-sm">./my_tb/</code> directory with 16 files:</p>
+          <div class="code-block">
+<span class="out">  UVM Testbench Generated!
+  Protocol: axi4_lite
+  Output:   /home/user/my_tb
+
+    axi_slave_if.sv
+    axi_slave_seq_item.sv
+    axi_slave_sequences.sv
+    axi_slave_driver.sv
+    axi_slave_monitor.sv
+    axi_slave_sequencer.sv
+    axi_slave_agent.sv
+    axi_slave_scoreboard.sv
+    axi_slave_coverage.sv
+    axi_slave_env.sv
+    axi_slave_test.sv
+    axi_slave_tb_top.sv
+    axi_slave_pkg.sv
+    file.list
+    README.txt
+    run.sh</span>
+          </div>
+        </section>
+
+        <!-- Commands -->
+        <section id="commands" class="mb-14">
+          <h2 class="text-2xl font-bold text-white mb-6 flex items-center gap-3"><span class="step-num">3</span> Commands</h2>
+
+          <!-- generate -->
+          <div id="generate" class="card mb-6">
+            <h3 class="text-lg font-bold text-white mb-1"><code class="text-brand-300">uvmgen generate</code></h3>
+            <p class="text-sm text-gray-400 mb-4">Generate a complete UVM testbench.</p>
+            <table class="w-full text-sm">
+              <thead><tr class="border-b border-gray-700"><th class="text-left py-2 text-gray-400 font-semibold">Flag</th><th class="text-left py-2 text-gray-400 font-semibold">Description</th><th class="text-left py-2 text-gray-400 font-semibold">Default</th></tr></thead>
+              <tbody class="text-gray-300">
+                <tr class="border-b border-gray-800"><td class="py-2"><code class="text-brand-300">--name, -n</code></td><td>Project / DUT name</td><td class="text-gray-500"><em>required</em></td></tr>
+                <tr class="border-b border-gray-800"><td class="py-2"><code class="text-brand-300">--protocol, -p</code></td><td>Protocol type</td><td class="text-gray-500">custom</td></tr>
+                <tr class="border-b border-gray-800"><td class="py-2"><code class="text-brand-300">--data-width, -dw</code></td><td>Data bus width (bits)</td><td class="text-gray-500">32</td></tr>
+                <tr class="border-b border-gray-800"><td class="py-2"><code class="text-brand-300">--addr-width, -aw</code></td><td>Address bus width (bits)</td><td class="text-gray-500">32</td></tr>
+                <tr class="border-b border-gray-800"><td class="py-2"><code class="text-brand-300">--clock-mhz</code></td><td>Clock frequency in MHz</td><td class="text-gray-500">100</td></tr>
+                <tr class="border-b border-gray-800"><td class="py-2"><code class="text-brand-300">--tests, -t</code></td><td>Test names (repeatable)</td><td class="text-gray-500">base_test</td></tr>
+                <tr class="border-b border-gray-800"><td class="py-2"><code class="text-brand-300">--config, -c</code></td><td>JSON config file (overrides all flags)</td><td class="text-gray-500">—</td></tr>
+                <tr><td class="py-2"><code class="text-brand-300">--output, -o</code></td><td>Output directory</td><td class="text-gray-500">./output</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- init -->
+          <div id="init" class="card mb-6">
+            <h3 class="text-lg font-bold text-white mb-1"><code class="text-brand-300">uvmgen init</code> <code class="text-gray-500">&lt;filename&gt;</code></h3>
+            <p class="text-sm text-gray-400 mb-4">Create a sample JSON config file to get started.</p>
+            <div class="code-block">
+              <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+<span class="cmd">uvmgen init</span> <span class="str">my_project.json</span>
+<span class="out">  Sample config written to my_project.json</span>
+
+<span class="comment"># Then customize and generate:</span>
+<span class="cmd">uvmgen generate</span> <span class="flag">--name</span> <span class="str">my_dut</span> <span class="flag">--config</span> <span class="str">my_project.json</span> <span class="flag">--output</span> <span class="str">./tb</span>
+            </div>
+          </div>
+
+          <!-- list-protocols -->
+          <div id="list-protocols" class="card mb-6">
+            <h3 class="text-lg font-bold text-white mb-1"><code class="text-brand-300">uvmgen list-protocols</code></h3>
+            <p class="text-sm text-gray-400 mb-4">Show all available built-in protocols.</p>
+            <div class="code-block">
+              <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+<span class="cmd">uvmgen list-protocols</span>
+
+<span class="out">  Available Protocols:
+
+    custom          Custom protocol
+    axi4_lite       AXI4-Lite (AMBA) Protocol
+    apb             APB (AMBA Advanced Peripheral Bus) Protocol
+    spi             SPI (Serial Peripheral Interface) Protocol
+    uart            UART (Universal Asynchronous Receiver Transmitter) Protocol</span>
+            </div>
+          </div>
+
+          <!-- serve -->
+          <div id="serve" class="card mb-6">
+            <h3 class="text-lg font-bold text-white mb-1"><code class="text-brand-300">uvmgen serve</code></h3>
+            <p class="text-sm text-gray-400 mb-4">Start the web UI server locally.</p>
+            <div class="code-block">
+              <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+<span class="cmd">uvmgen serve</span> <span class="flag">--port</span> <span class="str">8000</span>
+<span class="out">  Starting UVM Testbench Generator on http://0.0.0.0:8000</span>
+
+<span class="comment"># With auto-reload for development:</span>
+<span class="cmd">uvmgen serve</span> <span class="flag">--reload</span>
+            </div>
+            <table class="w-full text-sm mt-4">
+              <thead><tr class="border-b border-gray-700"><th class="text-left py-2 text-gray-400 font-semibold">Flag</th><th class="text-left py-2 text-gray-400 font-semibold">Description</th><th class="text-left py-2 text-gray-400 font-semibold">Default</th></tr></thead>
+              <tbody class="text-gray-300">
+                <tr class="border-b border-gray-800"><td class="py-2"><code class="text-brand-300">--host</code></td><td>Host to bind</td><td class="text-gray-500">0.0.0.0</td></tr>
+                <tr class="border-b border-gray-800"><td class="py-2"><code class="text-brand-300">--port</code></td><td>Port number</td><td class="text-gray-500">8000</td></tr>
+                <tr><td class="py-2"><code class="text-brand-300">--reload</code></td><td>Enable auto-reload (dev mode)</td><td class="text-gray-500">off</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- Config File -->
+        <section id="config-file" class="mb-14">
+          <h2 class="text-2xl font-bold text-white mb-6 flex items-center gap-3"><span class="step-num">4</span> Config File Format</h2>
+          <p class="text-gray-400 mb-4">Use a JSON config for full control. The web app's <strong class="text-white">Save Config</strong> button exports the same format.</p>
+          <div class="code-block">
+            <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+{
+  <span class="str">"project_name"</span>: <span class="str">"axi_slave"</span>,
+  <span class="str">"module_name"</span>: <span class="str">""</span>,
+  <span class="str">"protocol"</span>: {
+    <span class="str">"protocol"</span>: <span class="str">"axi4_lite"</span>,
+    <span class="str">"data_width"</span>: 32,
+    <span class="str">"addr_width"</span>: 32,
+    <span class="str">"clock_freq_mhz"</span>: 100,
+    <span class="str">"extra_params"</span>: {}
+  },
+  <span class="str">"agent"</span>: {
+    <span class="str">"is_active"</span>: true,
+    <span class="str">"has_driver"</span>: true,
+    <span class="str">"has_monitor"</span>: true,
+    <span class="str">"has_sequencer"</span>: true,
+    <span class="str">"has_coverage"</span>: true
+  },
+  <span class="str">"tests"</span>: [
+    { <span class="str">"name"</span>: <span class="str">"sanity_test"</span>, <span class="str">"description"</span>: <span class="str">"Basic R/W"</span>, <span class="str">"num_transactions"</span>: 50, <span class="str">"timeout_ns"</span>: 5000 },
+    { <span class="str">"name"</span>: <span class="str">"stress_test"</span>, <span class="str">"description"</span>: <span class="str">"High throughput"</span>, <span class="str">"num_transactions"</span>: 500, <span class="str">"timeout_ns"</span>: 50000 }
+  ],
+  <span class="str">"components"</span>: {
+    <span class="str">"interface"</span>: true, <span class="str">"sequence_item"</span>: true, <span class="str">"sequences"</span>: true,
+    <span class="str">"driver"</span>: true, <span class="str">"monitor"</span>: true, <span class="str">"sequencer"</span>: true,
+    <span class="str">"agent"</span>: true, <span class="str">"scoreboard"</span>: true, <span class="str">"coverage"</span>: true,
+    <span class="str">"env"</span>: true, <span class="str">"test"</span>: true, <span class="str">"top"</span>: true, <span class="str">"package"</span>: true
+  }
+}
+          </div>
+          <p class="text-xs text-gray-500 mt-3">Tip: Use <code class="text-brand-300">uvmgen init config.json</code> to generate a starter file, or <strong>Save Config</strong> from the web app.</p>
+        </section>
+
+        <!-- Protocols -->
+        <section id="protocols" class="mb-14">
+          <h2 class="text-2xl font-bold text-white mb-6 flex items-center gap-3"><span class="step-num">5</span> Supported Protocols</h2>
+          <div class="grid sm:grid-cols-2 gap-4">
+            <div class="card">
+              <div class="flex items-center gap-2 mb-2"><span class="proto-tag">axi4_lite</span><span class="text-sm font-bold text-white">AXI4-Lite</span></div>
+              <p class="text-sm text-gray-400">AMBA AXI4-Lite with full port set (AWADDR, WDATA, BRESP, ARADDR, RDATA, etc.), protocol constraints, and coverage.</p>
+            </div>
+            <div class="card">
+              <div class="flex items-center gap-2 mb-2"><span class="proto-tag">apb</span><span class="text-sm font-bold text-white">APB</span></div>
+              <p class="text-sm text-gray-400">AMBA APB with PSEL, PENABLE, PWRITE, PADDR, PWDATA, PRDATA, PREADY, PSLVERR.</p>
+            </div>
+            <div class="card">
+              <div class="flex items-center gap-2 mb-2"><span class="proto-tag">spi</span><span class="text-sm font-bold text-white">SPI</span></div>
+              <p class="text-sm text-gray-400">Serial Peripheral Interface with SCLK, MOSI, MISO, CS_N. Configurable CPOL, CPHA, bit order.</p>
+            </div>
+            <div class="card">
+              <div class="flex items-center gap-2 mb-2"><span class="proto-tag">uart</span><span class="text-sm font-bold text-white">UART</span></div>
+              <p class="text-sm text-gray-400">UART with TX, RX, CTS_N, RTS_N. Configurable baud rate, data bits, parity, stop bits.</p>
+            </div>
+            <div class="card sm:col-span-2">
+              <div class="flex items-center gap-2 mb-2"><span class="proto-tag" style="background:rgba(107,114,128,0.15);color:#9ca3af;">custom</span><span class="text-sm font-bold text-white">Custom</span></div>
+              <p class="text-sm text-gray-400">Define your own ports manually. No auto-generated ports or protocol-specific constraints — full flexibility.</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- Examples -->
+        <section id="examples" class="mb-14">
+          <h2 class="text-2xl font-bold text-white mb-6 flex items-center gap-3"><span class="step-num">6</span> Examples</h2>
+
+          <div class="card mb-4">
+            <p class="text-sm font-semibold text-gray-300 mb-3">Generate APB testbench with multiple tests</p>
+            <div class="code-block">
+              <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+<span class="cmd">uvmgen generate</span> \
+  <span class="flag">--name</span> <span class="str">apb_gpio</span> \
+  <span class="flag">--protocol</span> <span class="str">apb</span> \
+  <span class="flag">--data-width</span> <span class="str">32</span> \
+  <span class="flag">--tests</span> <span class="str">sanity_test</span> \
+  <span class="flag">--tests</span> <span class="str">stress_test</span> \
+  <span class="flag">--tests</span> <span class="str">error_inject_test</span> \
+  <span class="flag">--output</span> <span class="str">./apb_gpio_tb</span>
+            </div>
+          </div>
+
+          <div class="card mb-4">
+            <p class="text-sm font-semibold text-gray-300 mb-3">Generate from saved config (web app &rarr; CLI workflow)</p>
+            <div class="code-block">
+              <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+<span class="comment"># 1. Design in web app, click "Save Config" &rarr; my_dut_config.json</span>
+<span class="comment"># 2. Use that config locally:</span>
+<span class="cmd">uvmgen generate</span> <span class="flag">--name</span> <span class="str">my_dut</span> <span class="flag">--config</span> <span class="str">my_dut_config.json</span> <span class="flag">--output</span> <span class="str">./tb</span>
+            </div>
+          </div>
+
+          <div class="card mb-4">
+            <p class="text-sm font-semibold text-gray-300 mb-3">Generate SPI testbench with 8-bit data</p>
+            <div class="code-block">
+              <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+<span class="cmd">uvmgen generate</span> <span class="flag">-n</span> <span class="str">spi_flash</span> <span class="flag">-p</span> <span class="str">spi</span> <span class="flag">-dw</span> <span class="str">8</span> <span class="flag">-o</span> <span class="str">./spi_tb</span>
+            </div>
+          </div>
+
+          <div class="card">
+            <p class="text-sm font-semibold text-gray-300 mb-3">Run the generated testbench</p>
+            <div class="code-block">
+              <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+<span class="cmd">cd</span> ./my_tb
+
+<span class="comment"># The generated run.sh auto-detects VCS, Xcelium, or Questa</span>
+<span class="cmd">chmod +x</span> run.sh
+<span class="cmd">./run.sh</span>
+
+<span class="comment"># Or manually with VCS:</span>
+<span class="cmd">vcs</span> <span class="flag">-sverilog</span> <span class="flag">-ntb_opts uvm</span> <span class="flag">-f</span> file.list <span class="flag">+UVM_TESTNAME=</span><span class="str">base_test</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- CI/CD -->
+        <section id="cicd" class="mb-14">
+          <h2 class="text-2xl font-bold text-white mb-6 flex items-center gap-3"><span class="step-num">7</span> CI/CD Integration</h2>
+          <p class="text-gray-400 mb-4">Automate testbench generation in your pipeline:</p>
+
+          <div class="card mb-4">
+            <p class="text-sm font-semibold text-gray-300 mb-3">GitHub Actions example</p>
+            <div class="code-block">
+              <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+<span class="comment"># .github/workflows/gen-tb.yml</span>
+<span class="str">name</span>: Generate UVM TB
+<span class="str">on</span>: [push]
+<span class="str">jobs</span>:
+  <span class="str">generate</span>:
+    <span class="str">runs-on</span>: ubuntu-latest
+    <span class="str">steps</span>:
+      - <span class="str">uses</span>: actions/checkout@v4
+      - <span class="str">uses</span>: actions/setup-python@v5
+        <span class="str">with</span>: { <span class="str">python-version</span>: <span class="str">'3.11'</span> }
+      - <span class="str">run</span>: |
+          pip install -e .
+          uvmgen generate --name my_dut --config tb_config.json -o ./generated_tb
+      - <span class="str">uses</span>: actions/upload-artifact@v4
+        <span class="str">with</span>:
+          <span class="str">name</span>: uvm-testbench
+          <span class="str">path</span>: ./generated_tb/
+            </div>
+          </div>
+
+          <div class="card">
+            <p class="text-sm font-semibold text-gray-300 mb-3">Makefile integration</p>
+            <div class="code-block">
+              <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+<span class="comment"># Makefile</span>
+<span class="str">TB_DIR</span> := ./tb
+<span class="str">CONFIG</span> := tb_config.json
+
+<span class="cmd">gen-tb</span>:
+	uvmgen generate --name $(DUT) --config $(CONFIG) -o $(TB_DIR)
+
+<span class="cmd">sim</span>: gen-tb
+	cd $(TB_DIR) && ./run.sh
+            </div>
+          </div>
+        </section>
+
+        <!-- CTA -->
+        <div class="text-center py-8 border-t border-gray-800">
+          <p class="text-gray-400 mb-4">Prefer a visual interface? Try the web generator.</p>
+          <a href="/app" class="btn btn-primary text-base" style="padding:0.875rem 2rem;">Open Web Generator</a>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="py-8 px-6 border-t border-gray-800/50 text-center text-sm text-gray-500">
+    <p>UVM Testbench Generator &copy; 2026 &mdash; Built for Verification Engineers</p>
+  </footer>
+
+  <script>
+    function copyCode(btn) {
+      const block = btn.parentElement;
+      const text = block.innerText.replace('Copy','').trim();
+      navigator.clipboard.writeText(text).then(() => {
+        btn.textContent = 'Copied!';
+        setTimeout(() => btn.textContent = 'Copy', 1500);
+      });
+    }
+  </script>
+</body>
+</html>
